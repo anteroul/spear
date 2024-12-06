@@ -41,11 +41,13 @@ set(SOURCES
     src/rendering/opengl/shader.cc
     src/rendering/opengl/texture.cc
     src/rendering/vulkan/renderer.cc
+        include/spear/rendering/vulkan/error.hh
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS})
 
-add_library(spear ${SOURCES})
+add_library(spear ${SOURCES}
+        include/spear/rendering/vulkan/error.hh)
 target_include_directories(spear PUBLIC include)
 target_link_libraries(spear
     PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
