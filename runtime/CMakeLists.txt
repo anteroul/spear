@@ -7,6 +7,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(../engine engine_dir)
-add_executable(main.cc)
+add_executable(spear-application main.cc)
 target_link_libraries(spear-application spear)
 

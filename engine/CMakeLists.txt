@@ -40,6 +40,7 @@ set(SOURCES
     src/rendering/opengl/renderer.cc
     src/rendering/opengl/shader.cc
     src/rendering/opengl/texture.cc
+    src/rendering/vulkan/renderer.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS})

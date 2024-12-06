@@ -21,7 +21,8 @@ namespace spear::rendering::vulkan
             m_viewport = {0.f, 0.f, width, height, -2.f, 2.f};
         }
 
-        void setBackgroundColor(float r, float g, float b, float a);
+        void setBackgroundColor(VkDevice_T *r, const VkImageCreateInfo *g, const VkAllocationCallbacks *b, VkImage *a,
+                                SDL_Renderer *pRenderer, nullptr_t pVoid, nullptr_t pVoid1);
         void init();
 
         static VkInstance* m_instance;

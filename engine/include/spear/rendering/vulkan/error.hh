@@ -2,7 +2,11 @@
 #define SPEAR_RENDERING_VULKAN_ERROR_HH
 
 #include <iostream>
+#include <vulkan/vulkan.h>
+
+#ifndef SPEAR_RENDERIN_VULKAN_RENDERER
 #include "renderer.hh"
+#endif
 
 namespace spear::rendering::vulkan
 {
