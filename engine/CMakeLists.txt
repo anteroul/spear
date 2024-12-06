@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.22)
 project(spear)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -10,6 +10,7 @@ find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(Vulkan REQUIRED)
 
 add_compile_options(-Wall -Wextra -pedantic -std=c++20)
 
@@ -41,11 +42,11 @@ set(SOURCES
     src/rendering/opengl/texture.cc
 )
 
-include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS})
 
 add_library(spear ${SOURCES})
 target_include_directories(spear PUBLIC include)
 target_link_libraries(spear
     PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
-    PRIVATE OpenGL::GL GLEW::GLEW
+    PRIVATE OpenGL::GL GLEW::GLEW Vulkan
 )
