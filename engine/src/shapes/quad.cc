@@ -79,11 +79,12 @@ void Quad::initialize(const glm::vec3& position)
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
+
+    Mesh::m_shader->use();
 }
 
 void Quad::render(Camera& camera)
 {
-    m_shader->use();
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * glm::mat4(1);
     Mesh::m_shader->setMat4("mvp", mvp);
 

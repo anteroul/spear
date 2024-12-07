@@ -18,38 +18,36 @@ set(SPEAR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 add_compile_definitions(SPEAR_ROOT="${SPEAR_ROOT}")
 
 set(SOURCES
-    #src/material.cc
+        #src/material.cc
 
-    src/window.cc
-    src/transform.cc
-    src/event_handler.cc
-    src/mesh.cc
-    src/camera.cc
-    src/sprite3d.cc
+        src/window.cc
+        src/transform.cc
+        src/event_handler.cc
+        src/mesh.cc
+        src/camera.cc
+        src/sprite3d.cc
 
-    # Shapes
-    #src/shapes/cube.cc
-    src/shapes/shape.cc
-    src/shapes/quad.cc
+        # Shapes
+        #src/shapes/cube.cc
+        src/shapes/shape.cc
+        src/shapes/quad.cc
 
-    # Rendering
-    src/rendering/api.cc
-    src/rendering/base_shader.cc
-    src/rendering/base_texture.cc
-    src/rendering/shader_type.cc
-    src/rendering/opengl/renderer.cc
-    src/rendering/opengl/shader.cc
-    src/rendering/opengl/texture.cc
-    src/rendering/vulkan/renderer.cc
-        include/spear/rendering/vulkan/error.hh
+        # Rendering
+        src/rendering/api.cc
+        src/rendering/base_shader.cc
+        src/rendering/base_texture.cc
+        src/rendering/shader_type.cc
+        src/rendering/opengl/renderer.cc
+        src/rendering/opengl/shader.cc
+        src/rendering/opengl/texture.cc
 )
 
-include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${VULKAN_INCLUDE_DIRS})
+include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
 
-add_library(spear ${SOURCES}
-        include/spear/rendering/vulkan/error.hh)
+add_library(spear ${SOURCES})
 target_include_directories(spear PUBLIC include)
 target_link_libraries(spear
-    PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
-    PRIVATE OpenGL::GL GLEW::GLEW Vulkan
+        PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
+        PRIVATE OpenGL::GL GLEW::GLEW
+        PRIVATE Vulkan::Vulkan
 )

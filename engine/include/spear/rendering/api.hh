@@ -8,7 +8,7 @@ enum API
 {
     OpenGL,
     Vulkan,
-    DirectX, // DirectX 12 to be precise.
+    DirectX,
     Metal
 };
 

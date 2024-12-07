@@ -14,10 +14,12 @@ class Mesh
 {
 public:
     explicit Mesh(std::shared_ptr<rendering::BaseShader> shader);
+    explicit Mesh(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture);
 
     virtual void render(Camera& camera) = 0;
 protected:
     std::shared_ptr<rendering::BaseShader> m_shader;
+    std::shared_ptr<rendering::BaseTexture> m_texture = nullptr;
 };
 
 }

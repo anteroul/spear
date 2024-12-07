@@ -4,6 +4,9 @@
 
 namespace spear::rendering::vulkan
 {
+    // FIXME: Not really a fan of this weird indentation scheme. Sorry but I am not going to see the trouble and change the indentation unless reasoned
+    //  why namespace {}-brackets are an exception.
+    //  T: soy dev.
 
     Renderer::Renderer(SDL_Window* window) : m_window(window)
     {}

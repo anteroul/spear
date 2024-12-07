@@ -15,7 +15,7 @@ Window::Window(const std::string& window_name, Size size, rendering::API api) :
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL2: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL3: %s\n", SDL_GetError());
         return;
     }
     std::cout << "SDL initialized" << std::endl;
