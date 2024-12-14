@@ -4,20 +4,10 @@
 namespace spear
 {
 
-Sprite3D::Sprite3D(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture, glm::vec3 position)
-    : Mesh(shader, texture), Transform(),
-      m_position(position), m_color(-1), m_sampler(GL_TEXTURE_2D), m_useTexture(true)
+Sprite3D::Sprite3D(glm::vec3 position)
+    : Mesh(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::sprite3D))), Transform(),
+      m_position(position), m_sampler(GL_TEXTURE_2D)
 {
-    setUseTexture();
-    init();
-}
-
-Sprite3D::Sprite3D(std::shared_ptr<rendering::BaseShader> shader, glm::vec3 position, glm::vec4 color)
-    : Mesh(shader), Transform(),
-      m_position(position), m_color(color), m_sampler(-1), m_useTexture(false)
-{
-    setUseTexture();
-    init();
 }
 
 Sprite3D::~Sprite3D()
@@ -29,31 +19,14 @@ Sprite3D::~Sprite3D()
 
 void Sprite3D::render(Camera& camera)
 {
-    m_shader->use();
-
-    // Model matrix
-    /*
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), m_position);
-    model = glm::rotate(model, glm::radians(m_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::scale(model, glm::vec3(m_size, 1.0f));
-    */
-
+    Mesh::m_shader->use();
     glm::mat4 mvp = Transform::getModel() * camera.getViewMatrix() * camera.getProjectionMatrix();
     m_shader->setMat4("mvp", mvp);
 
-    if (m_useTexture)
-    {
-        glActiveTexture(GL_TEXTURE0);
-        m_shader->setSampler2D("textureSampler", 0);
-
-        //assert(m_shader->get)
-
-        m_texture->bind();
-    }
-    else
-    {
-        m_shader->setVec4f("color", m_color);
-    }
+    // Ensure texture is bound to unit 0
+    glActiveTexture(GL_TEXTURE0);
+    m_texture.bind();
+    m_shader->setSampler2D("textureSampler", 0);
 
     // Render quad
     glBindVertexArray(m_vao);
@@ -61,7 +34,7 @@ void Sprite3D::render(Camera& camera)
     glBindVertexArray(0);
 }
 
-void Sprite3D::init()
+void Sprite3D::initialize()
 {
     glGenVertexArrays(1, &m_vao);
     glGenBuffers(1, &m_vbo);
@@ -86,16 +59,10 @@ void Sprite3D::init()
     glBindVertexArray(0);
 }
 
-void Sprite3D::setUseTexture()
+void Sprite3D::loadImage(const std::string& path)
 {
-    if (m_useTexture)
-    {
-        m_shader->setInt("useTexture", 1);
-    }
-    else
-    {
-        m_shader->setInt("useTexture", 0);
-    }
+    m_texture.loadFile(path);
+    m_texture.bind();
 }
 
 }

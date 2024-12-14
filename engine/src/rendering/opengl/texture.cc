@@ -10,8 +10,8 @@
 namespace spear::rendering::opengl
 {
 
-Texture::Texture(uint32_t id)
-    : BaseTexture(id)
+Texture::Texture()
+    : BaseTexture()
 {
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
@@ -82,8 +82,8 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
     GLenum format = SDLFormatToOpenGLFormat(surface->format);
 
     // Generate OpenGL texture.
-    glGenTextures(1, BaseTexture::getIdPtr());
-    glBindTexture(GL_TEXTURE_2D, BaseTexture::getId());
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // Set texture parameters.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -95,7 +95,8 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        format,
+        //format,
+        GL_RGBA,
         surface->w,
         surface->h,
         0,
@@ -119,13 +120,13 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
 
 void Texture::bind(uint32_t unit) const
 {
-    if (m_id == 0)
+    if (m_texture == 0)
     {
         std::cerr << "Attempted to bind an uninitialized texture." << std::endl;
         return;
     }
     glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, m_id);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
 }
 
 void unbind(uint32_t unit)
@@ -136,10 +137,10 @@ void unbind(uint32_t unit)
 
 void Texture::free()
 {
-    if (m_id)
+    if (m_texture)
     {
-        glDeleteTextures(1, &m_id);
-        m_id = 0;
+        glDeleteTextures(1, &m_texture);
+        m_texture = 0;
         m_width = 0;
         m_height = 0;
     }

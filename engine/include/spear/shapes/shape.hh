@@ -10,7 +10,7 @@ namespace spear
 class Shape : public Mesh, public Entity
 {
 public:
-    explicit Shape(std::shared_ptr<rendering::BaseShader> shader);
+    Shape(std::shared_ptr<rendering::BaseShader> shader);
 };
 
 }

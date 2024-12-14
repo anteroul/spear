@@ -1,5 +1,4 @@
 #include <spear/shapes/quad.hh>
-
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -8,9 +7,8 @@
 namespace spear
 {
 
-Quad::Quad(std::shared_ptr<rendering::BaseShader> shader, size_t size, const glm::vec3& color)
-    : Shape(std::move(shader)),
-      m_size(size),
+Quad::Quad(const glm::vec3& color)
+    : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::quad))),
       m_color(color),
       m_vao(0), m_vbo(0), m_ebo(0)
 {
@@ -30,18 +28,6 @@ void Quad::free()
 
 void Quad::translate(const glm::vec3& position)
 {
-    /*
-    Transform::translate(position);
-    // Each vertex has 6 components: x, y, z, r, g, b
-    constexpr int stride = 6;
-
-    for (size_t i = 0; i < m_vertices.size(); i += stride)
-    {
-        m_vertices[i + 0] += position.x;
-        m_vertices[i + 1] += position.y;
-        m_vertices[i + 2] += position.z;
-    }
-    */
     free();
     initialize(position);
 }
@@ -97,10 +83,8 @@ void Quad::initialize(const glm::vec3& position)
 
 void Quad::render(Camera& camera)
 {
-    Mesh::m_shader->use();
-
+    m_shader->use();
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * glm::mat4(1);
-    //glm::mat4 mvp = camera.getProjectionMatrix(16.f / 9.f) * camera.getViewMatrix() * Transform::getModel();
     Mesh::m_shader->setMat4("mvp", mvp);
 
     // Render the cube

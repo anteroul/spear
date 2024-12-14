@@ -13,7 +13,7 @@ class Quad : public Shape
 {
 public:
     /// Constructor.
-    Quad(std::shared_ptr<spear::rendering::BaseShader> m_shader, size_t size, const glm::vec3& color);
+    Quad(const glm::vec3& color);
 
     /// Destructor.
     ~Quad();
@@ -25,12 +25,10 @@ public:
     /// Transform::translate implementation.
     void translate(const glm::vec3& position) override;
 
-    //void render(const glm::mat4& view, const glm::mat4& projection);
     /// Mesh::render implementation.
     void render(Camera& camera) override;
 
 private:
-    uint64_t m_size;
     glm::vec3 m_color;
     uint32_t m_vao, m_vbo, m_ebo;
     std::vector<float> m_vertices;

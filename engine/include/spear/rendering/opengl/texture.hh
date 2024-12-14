@@ -11,8 +11,7 @@ class Texture : public BaseTexture
 {
 public:
     /// Constructor.
-    /// \param id Shader id.
-    Texture(uint32_t id);
+    Texture();
 
     /// Destructor.
     ~Texture();
@@ -40,6 +39,8 @@ public:
 
     // Free texture
     void free();
+private:
+    uint32_t m_texture;
 };
 
 }

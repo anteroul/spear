@@ -17,13 +17,13 @@ class Sprite3D : public Mesh, public Transform
 {
 public:
     // Constructor with texture.
-    Sprite3D(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture, glm::vec3 position);
-
-    // Constructor with color.
-    Sprite3D(std::shared_ptr<rendering::BaseShader> shader, glm::vec3 position, glm::vec4 color);
+    Sprite3D(glm::vec3 position);
 
     // Destructor.
     ~Sprite3D();
+
+    void initialize();
+    void loadImage(const std::string& path);
 
     /// Mesh::render implementation.
     void render(Camera& camera) override;
@@ -33,30 +33,23 @@ public:
         m_position = newPosition;
     }
 
-    void setSize(const glm::vec2& newSize)
-    {
-        m_size = newSize;
-    }
-
     void setRotation(float newRotation)
     {
         m_rotation = newRotation;
     }
 
-protected:
-    void init();
-    void setUseTexture();
 private:
+    rendering::opengl::Texture m_texture;
+
     // Input data.
     glm::vec3 m_position;
-    glm::vec4 m_color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    glm::vec2 m_size;
     float m_rotation; // degrees
 
     // Vertex Array Object, Vertex Buffer Object, Element Buffer Object.
     uint32_t m_vao = 0, m_vbo = 0, m_ebo = 0;
 
     // Vertices for a quad.
+    /*
     const float m_vertices[20] = {
         // Positions        // Texture Coords
         0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
@@ -64,15 +57,22 @@ private:
         1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
         0.0f, 0.0f, 0.0f,   0.0f, 0.0f
     };
+    */
+
+    const float m_vertices[20] = {
+        // Positions        // Texture Coords
+       -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, // Top-left
+        0.5f,  0.5f, 0.0f,  1.0f, 1.0f, // Top-right
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // Bottom-right
+       -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  // Bottom-left
+    };
 
     const uint32_t m_indices[6]
     {
         0, 1, 2,
         2, 3, 0
     };
-
     int32_t m_sampler;
-    bool m_useTexture;
 };
 
 }

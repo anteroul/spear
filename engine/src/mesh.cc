@@ -8,11 +8,4 @@ Mesh::Mesh(std::shared_ptr<rendering::BaseShader> shader)
 {
 }
 
-Mesh::Mesh(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture)
-    : m_shader(std::move(shader)),
-      m_texture(std::move(texture))
-{
-}
-
-
 }
