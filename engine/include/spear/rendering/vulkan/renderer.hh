@@ -23,17 +23,13 @@ public:
         m_viewport = {0.f, 0.f, width, height, -2.f, 2.f};
     }
 
-    void setBackgroundColor(VkDevice_T *r, const VkImageCreateInfo *g, const VkAllocationCallbacks *b, VkImage *a,
-                            SDL_Renderer *pRenderer, nullptr_t pVoid, nullptr_t pVoid1);
-
     void init();
-
-    static VkInstance *m_instance;
+    static VkInstance* m_instance;
 private:
     VkBuffer m_buffer;
-    VkPipeline *m_pipeline;
+    VkPipeline* m_pipeline;
     VkViewport m_viewport;
-    SDL_Window *m_window;
+    SDL_Window* m_window;
     uint32_t m_shader_program;
 };
 

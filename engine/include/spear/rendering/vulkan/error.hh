@@ -4,9 +4,7 @@
 #include <iostream>
 #include <vulkan/vulkan.h>
 
-#ifndef SPEAR_RENDERING_VULKAN_RENDERER
 #include <spear/rendering/vulkan/renderer.hh>
-#endif
 
 namespace spear::rendering::vulkan
 {
