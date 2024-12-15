@@ -12,7 +12,7 @@ namespace spear::rendering::vulkan
 static void vkError()
 {
     // TODO: Use Vulkan Validation Layer for error handling.
-    if (Renderer::m_instance == nullptr)
+    if (Renderer::getInstance() == nullptr)
     {
         std::cerr << "Vulkan error code: " << VK_ERROR_INITIALIZATION_FAILED << std::endl;
     }

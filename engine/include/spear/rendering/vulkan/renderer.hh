@@ -24,8 +24,13 @@ public:
     }
 
     void init();
-    static VkInstance* m_instance;
+
+    static VkInstance* getInstance()
+    {
+        return m_instance;
+    }
 private:
+    static VkInstance* m_instance;
     VkBuffer m_buffer;
     VkPipeline* m_pipeline;
     VkViewport m_viewport;
