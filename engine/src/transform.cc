@@ -3,7 +3,8 @@
 namespace spear
 {
 
-Transform::Transform() : m_model(glm::mat4(1))
+Transform::Transform()
+    : m_model(glm::mat4(1))
 {
 }
 
@@ -27,4 +28,4 @@ glm::vec3 Transform::getPosition() const
     return glm::vec3(m_model[3][0], m_model[3][1], m_model[3][2]);
 }
 
-}
+} // namespace spear

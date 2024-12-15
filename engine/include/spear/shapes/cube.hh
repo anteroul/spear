@@ -1,9 +1,9 @@
 #ifndef SPEAR_SHAPE_HH
 #define SPEAR_SHAPE_HH
 
-#include <spear/shapes/shape.hh>
-#include <spear/rendering/opengl/texture.hh>
 #include <spear/camera.hh>
+#include <spear/rendering/opengl/texture.hh>
+#include <spear/shapes/shape.hh>
 
 #include <vector>
 
@@ -30,6 +30,6 @@ private:
     uint32_t m_uvDataSize;
 };
 
-}
+} // namespace spear
 
 #endif

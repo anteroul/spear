@@ -54,8 +54,14 @@ public:
     void use() override;
     void createShaderProgram() override;
 
-    int getVertexId() const { return m_vertexId; }
-    int getFragmentId() const { return m_fragmentId; }
+    int getVertexId() const
+    {
+        return m_vertexId;
+    }
+    int getFragmentId() const
+    {
+        return m_fragmentId;
+    }
 
 private:
     int getLocation(const std::string& name);
@@ -67,6 +73,6 @@ private:
     uint32_t m_fragmentId;
 };
 
-}
+} // namespace spear::rendering::opengl
 
 #endif

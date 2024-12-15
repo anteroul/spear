@@ -14,6 +14,6 @@ enum API
 
 bool isActive(API api);
 
-}
+} // namespace spear::rendering
 
 #endif

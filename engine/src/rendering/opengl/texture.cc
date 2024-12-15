@@ -2,8 +2,8 @@
 #include <spear/rendering/opengl/texture.hh>
 #include <spear/spear_root.hh>
 
-#include <SDL3_image/SDL_image.h>
 #include <GL/glew.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <iostream>
 
@@ -73,7 +73,7 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
     SDL_Surface* surface = IMG_Load(used_path.c_str());
     if (!surface)
     {
-        std::cerr << "Failed to load image: " << path 
+        std::cerr << "Failed to load image: " << path
                   << " | SDL_Error: " << SDL_GetError() << std::endl;
         return false;
     }
@@ -93,17 +93,16 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
 
     // Upload texture data to GPU.
     glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        //format,
-        GL_RGBA,
-        surface->w,
-        surface->h,
-        0,
-        format,
-        GL_UNSIGNED_BYTE,
-        surface->pixels
-    );
+            GL_TEXTURE_2D,
+            0,
+            // format,
+            GL_RGBA,
+            surface->w,
+            surface->h,
+            0,
+            format,
+            GL_UNSIGNED_BYTE,
+            surface->pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // Store dimensions.
@@ -146,4 +145,4 @@ void Texture::free()
     }
 }
 
-}
+} // namespace spear::rendering::opengl

@@ -6,8 +6,8 @@
 #include <glm/glm.hpp>
 
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 namespace spear::rendering::opengl
 {
@@ -18,60 +18,60 @@ Shader::Shader(ShaderType type)
     auto data = getShaderFiles(type, API::OpenGL);
 
     std::ifstream v_shader_file;
-	std::ifstream f_shader_file;
+    std::ifstream f_shader_file;
 
-	v_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-	f_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    v_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    f_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-	try
-	{
-		// Open files.
-		v_shader_file.open(data.vertex_shader);
-		f_shader_file.open(data.fragment_shader);
-		std::stringstream vShaderStream, fShaderStream;
+    try
+    {
+        // Open files.
+        v_shader_file.open(data.vertex_shader);
+        f_shader_file.open(data.fragment_shader);
+        std::stringstream vShaderStream, fShaderStream;
 
-		// Read file's buffer contents into streams.
-		vShaderStream << v_shader_file.rdbuf();
-		fShaderStream << f_shader_file.rdbuf();
+        // Read file's buffer contents into streams.
+        vShaderStream << v_shader_file.rdbuf();
+        fShaderStream << f_shader_file.rdbuf();
 
-		// Close file handlers.
-		v_shader_file.close();
-		f_shader_file.close();
+        // Close file handlers.
+        v_shader_file.close();
+        f_shader_file.close();
 
-		// Convert into string.
-		m_vertexCode = vShaderStream.str();
-		m_fragmentCode = fShaderStream.str();
-	}
-	catch (const std::ifstream::failure& e)
-	{
-		printf("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n");
-	}
+        // Convert into string.
+        m_vertexCode = vShaderStream.str();
+        m_fragmentCode = fShaderStream.str();
+    }
+    catch (const std::ifstream::failure& e)
+    {
+        printf("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n");
+    }
 
     rendering::opengl::openglError("before compiling shaders");
 
-	// Compile shaders.
-	const char* vShaderCode = m_vertexCode.c_str();
-	const char* fShaderCode = m_fragmentCode.c_str();
+    // Compile shaders.
+    const char* vShaderCode = m_vertexCode.c_str();
+    const char* fShaderCode = m_fragmentCode.c_str();
 
-	// Vertex shader.
+    // Vertex shader.
     m_vertexId = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(m_vertexId, 1, &vShaderCode, nullptr);
-	glCompileShader(m_vertexId);
-	checkCompileErrors(m_vertexId, "VERTEX");
+    glShaderSource(m_vertexId, 1, &vShaderCode, nullptr);
+    glCompileShader(m_vertexId);
+    checkCompileErrors(m_vertexId, "VERTEX");
 
-	// Fragment shader.
-	m_fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(m_fragmentId, 1, &fShaderCode, nullptr);
-	glCompileShader(m_fragmentId);
-	checkCompileErrors(m_fragmentId, "FRAGMENT");
+    // Fragment shader.
+    m_fragmentId = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(m_fragmentId, 1, &fShaderCode, nullptr);
+    glCompileShader(m_fragmentId);
+    checkCompileErrors(m_fragmentId, "FRAGMENT");
 
     rendering::opengl::openglError("after compiling shaders");
 
     createShaderProgram();
 
-	// Delete the shaders.
-	glDeleteShader(m_vertexId);
-	glDeleteShader(m_fragmentId);
+    // Delete the shaders.
+    glDeleteShader(m_vertexId);
+    glDeleteShader(m_fragmentId);
 
     rendering::opengl::openglError("opengl shader contructor");
 }
@@ -81,9 +81,9 @@ Shader::~Shader()
 }
 
 Shader::Shader(Shader&& other)
-	: BaseShader(std::move(other)),
-	  m_vertexCode(std::move(other.m_vertexCode)),
-	  m_fragmentCode(std::move(other.m_fragmentCode)),
+    : BaseShader(std::move(other)),
+      m_vertexCode(std::move(other.m_vertexCode)),
+      m_fragmentCode(std::move(other.m_fragmentCode)),
       m_vertexId(std::move(other.m_vertexId)),
       m_fragmentId(std::move(other.m_fragmentId))
 {
@@ -91,15 +91,15 @@ Shader::Shader(Shader&& other)
 
 Shader& Shader::operator=(Shader&& other)
 {
-	if (this != &other)
-	{
-		BaseShader::operator=(std::move(other));
-		m_vertexCode = std::move(other.m_vertexCode);
-		m_fragmentCode = std::move(other.m_fragmentCode);
+    if (this != &other)
+    {
+        BaseShader::operator=(std::move(other));
+        m_vertexCode = std::move(other.m_vertexCode);
+        m_fragmentCode = std::move(other.m_fragmentCode);
         m_vertexId = std::move(other.m_vertexId);
         m_fragmentId = std::move(other.m_fragmentId);
-	}
-	return *this;
+    }
+    return *this;
 }
 
 int Shader::getLocation(const std::string& name)
@@ -199,7 +199,6 @@ void Shader::setSampler2D(const std::string& name, int textureUnit)
         return;
     }
 
-
     int location = getLocation(name);
     if (location != -1)
     {
@@ -241,4 +240,4 @@ void Shader::createShaderProgram()
     BaseShader::setId(program);
 }
 
-}
+} // namespace spear::rendering::opengl

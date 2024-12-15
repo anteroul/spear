@@ -12,9 +12,12 @@ Sprite3D::Sprite3D(glm::vec3 position)
 
 Sprite3D::~Sprite3D()
 {
-    if (m_vao) glDeleteVertexArrays(1, &m_vao);
-    if (m_vbo) glDeleteBuffers(1, &m_vbo);
-    if (m_ebo) glDeleteBuffers(1, &m_ebo);
+    if (m_vao)
+        glDeleteVertexArrays(1, &m_vao);
+    if (m_vbo)
+        glDeleteBuffers(1, &m_vbo);
+    if (m_ebo)
+        glDeleteBuffers(1, &m_ebo);
 }
 
 void Sprite3D::render(Camera& camera)
@@ -65,4 +68,4 @@ void Sprite3D::loadImage(const std::string& path)
     m_texture.bind();
 }
 
-}
+} // namespace spear

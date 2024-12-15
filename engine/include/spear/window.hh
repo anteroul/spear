@@ -3,11 +3,11 @@
 
 #include <spear/rendering/api.hh>
 
-#include <SDL3/SDL_video.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_video.h>
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace spear
 {
@@ -33,7 +33,10 @@ public:
 
     void update(rendering::API api);
     void resize();
-    Size getSize() const { return m_size; }
+    Size getSize() const
+    {
+        return m_size;
+    }
 
 private:
     void createWindow(const std::string& title, Size size, rendering::API api);
@@ -46,6 +49,6 @@ private:
     rendering::API m_api;
 };
 
-}
+} // namespace spear
 
 #endif

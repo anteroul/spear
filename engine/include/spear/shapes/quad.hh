@@ -34,6 +34,6 @@ private:
     std::vector<float> m_vertices;
 };
 
-}
+} // namespace spear
 
 #endif

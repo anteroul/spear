@@ -12,6 +12,6 @@ static const std::string spearRoot()
     return SPEAR_ROOT;
 }
 
-}
+} // namespace spear
 
 #endif

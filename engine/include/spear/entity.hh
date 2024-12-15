@@ -9,9 +9,8 @@ namespace spear
 class Entity : public Transform
 {
 public:
-
 };
 
-}
+} // namespace spear
 
 #endif

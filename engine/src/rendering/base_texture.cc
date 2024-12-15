@@ -43,4 +43,4 @@ BaseTexture& BaseTexture::operator=(const BaseTexture& other)
     return *this;
 }
 
-}
+} // namespace spear::rendering
