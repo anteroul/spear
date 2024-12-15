@@ -39,10 +39,11 @@ public:
 
     // Free texture
     void free();
+
 private:
     uint32_t m_texture;
 };
 
-}
+} // namespace spear::rendering::opengl
 
 #endif

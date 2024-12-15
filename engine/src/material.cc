@@ -1,6 +1,6 @@
-#include <spear/rendering/opengl/shader.hh>
-#include <spear/rendering/opengl/error.hh>
 #include <spear/material.hh>
+#include <spear/rendering/opengl/error.hh>
+#include <spear/rendering/opengl/shader.hh>
 
 #include <GL/glew.h>
 #include <SDL3/SDL.h>
@@ -65,7 +65,8 @@ void Material::use()
         std::cerr << "Shader program linking failed!" << std::endl;
         char infoLog[512];
         glGetProgramInfoLog(programId, 512, nullptr, infoLog);
-        std::cerr << "Linker error log:\n" << infoLog << std::endl;
+        std::cerr << "Linker error log:\n"
+                  << infoLog << std::endl;
         return;
     }
 
@@ -77,7 +78,8 @@ void Material::use()
         std::cerr << "Shader program validation failed!" << std::endl;
         char infoLog[512];
         glGetProgramInfoLog(programId, 512, nullptr, infoLog);
-        std::cerr << "Validation error log:\n" << infoLog << std::endl;
+        std::cerr << "Validation error log:\n"
+                  << infoLog << std::endl;
         return;
     }
 
@@ -121,5 +123,4 @@ void Material::use()
     rendering::opengl::openglError("glUniform1i");
 }
 
-}
-
+} // namespace spear

@@ -24,17 +24,25 @@ public:
     /// Copy assignment operator.
     BaseTexture& operator=(const BaseTexture& other);
 
-    virtual ~BaseTexture(){}
+    virtual ~BaseTexture()
+    {
+    }
     virtual void bind(uint32_t unit = 0) const = 0;
 
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
+    int getWidth() const
+    {
+        return m_width;
+    }
+    int getHeight() const
+    {
+        return m_height;
+    }
 
 protected:
     float m_width;
     float m_height;
 };
 
-}
+} // namespace spear::rendering
 
 #endif

@@ -2,13 +2,12 @@
 #define SPEAR_SPRITE_3D_HH
 
 #include <spear/rendering/base_texture.hh>
-#include <spear/rendering/opengl/shader.hh>
+#include <spear/rendering/opengl/error.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/texture.hh>
-#include <spear/rendering/opengl/error.hh>
 
-#include <spear/transform.hh>
 #include <spear/mesh.hh>
+#include <spear/transform.hh>
 
 namespace spear
 {
@@ -59,6 +58,7 @@ private:
     };
     */
 
+    // clang-format off
     const float m_vertices[20] = {
         // Positions        // Texture Coords
        -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, // Top-left
@@ -67,14 +67,15 @@ private:
        -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  // Bottom-left
     };
 
-    const uint32_t m_indices[6]
-    {
+    const uint32_t m_indices[6] = {
         0, 1, 2,
         2, 3, 0
     };
+    // clang-format on
+
     int32_t m_sampler;
 };
 
-}
+} // namespace spear
 
 #endif

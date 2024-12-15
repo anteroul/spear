@@ -8,4 +8,4 @@ Mesh::Mesh(std::shared_ptr<rendering::BaseShader> shader)
 {
 }
 
-}
+} // namespace spear

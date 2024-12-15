@@ -24,14 +24,14 @@ public:
 
     void setBackgroundColor(float r, float g, float b, float a);
     void init();
-private:
 
+private:
 private:
     SDL_Window* m_window;
     uint32_t m_shader_program;
     SDL_GLContext m_context;
 };
 
-}
+} // namespace spear::rendering::opengl
 
 #endif

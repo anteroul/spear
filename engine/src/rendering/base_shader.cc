@@ -30,7 +30,8 @@ void BaseShader::checkCompileErrors(uint32_t shader, const std::string& type)
         if (!success)
         {
             glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+            std::cerr << "ERROR::SHADER_PROGRAM::LINKING_FAILED\n"
+                      << infoLog << std::endl;
         }
     }
     else
@@ -39,15 +40,15 @@ void BaseShader::checkCompileErrors(uint32_t shader, const std::string& type)
         if (!success)
         {
             glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-            std::cerr << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n" << infoLog << std::endl;
+            std::cerr << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n"
+                      << infoLog << std::endl;
         }
     }
 }
 
 BaseShader::~BaseShader()
 {
-	// TODO
+    // TODO
 }
 
-}
-
+} // namespace spear::rendering

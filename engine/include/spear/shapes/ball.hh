@@ -8,9 +8,8 @@ namespace spear
 
 class Ball : public Shape
 {
-
 };
 
-}
+} // namespace spear
 
 #endif

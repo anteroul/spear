@@ -1,5 +1,5 @@
-#include <spear/camera.hh>
 #include <glm/gtc/matrix_transform.hpp>
+#include <spear/camera.hh>
 
 namespace spear
 {
@@ -33,8 +33,10 @@ void Camera::rotate(float xoffset, float yoffset, bool constrain_pitch)
 
     if (constrain_pitch)
     {
-        if (m_pitch > 89.0f) m_pitch = 89.0f;
-        if (m_pitch < -89.0f) m_pitch = -89.0f;
+        if (m_pitch > 89.0f)
+            m_pitch = 89.0f;
+        if (m_pitch < -89.0f)
+            m_pitch = -89.0f;
     }
 
     updateCameraVectors();
@@ -43,8 +45,10 @@ void Camera::rotate(float xoffset, float yoffset, bool constrain_pitch)
 void Camera::zoom(float yoffset)
 {
     m_fov -= yoffset;
-    if (m_fov < 1.0f) m_fov = 1.0f;
-    if (m_fov > 45.0f) m_fov = 45.0f;
+    if (m_fov < 1.0f)
+        m_fov = 1.0f;
+    if (m_fov > 45.0f)
+        m_fov = 45.0f;
 }
 
 void Camera::updateCameraVectors()
@@ -60,4 +64,4 @@ void Camera::updateCameraVectors()
     m_up = glm::normalize(glm::cross(m_right, m_front));
 }
 
-}
+} // namespace spear

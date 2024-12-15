@@ -1,6 +1,6 @@
-#include <spear/shapes/quad.hh>
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <spear/shapes/quad.hh>
 
 #include <vector>
 
@@ -34,6 +34,7 @@ void Quad::translate(const glm::vec3& position)
 
 void Quad::initialize(const glm::vec3& position)
 {
+    // clang-format off
     m_vertices =
     {
         position.x-0.5f, position.y-0.5f, position.z-0.5f,  m_color.x, m_color.y, m_color.z,
@@ -55,6 +56,7 @@ void Quad::initialize(const glm::vec3& position)
         0, 3, 7, 7, 4, 0,   // Left face
         1, 2, 6, 6, 5, 1    // Right face
     };
+    // clang-format on
 
     // Create VAO, VBO, and EBO
     glGenVertexArrays(1, &m_vao);
@@ -93,4 +95,4 @@ void Quad::render(Camera& camera)
     glBindVertexArray(0);
 }
 
-}
+} // namespace spear

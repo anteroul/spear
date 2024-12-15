@@ -1,8 +1,8 @@
 #ifndef SPEAR_CAMERA_HH
 #define SPEAR_CAMERA_HH
 
-#include <glm/vec3.hpp>
 #include <glm/mat4x2.hpp>
+#include <glm/vec3.hpp>
 
 namespace spear
 {
@@ -13,14 +13,13 @@ public:
     const float ASPECT_RATIO = 16.f / 9.f;
 
     /// Constructor.
-    Camera( glm::vec3 position = glm::vec3(0.f, 0.f, 0.f),
-            glm::vec3 up = glm::vec3(0.f, 1.f, 0.f),
-            float yaw = -90.f,
-            float pitch = 0.f,
-            float movement_speed = 2.5f,
-            float mouse_sentitivity = 0.1f,
-            float fov = 45.0f
-    );
+    Camera(glm::vec3 position = glm::vec3(0.f, 0.f, 0.f),
+           glm::vec3 up = glm::vec3(0.f, 1.f, 0.f),
+           float yaw = -90.f,
+           float pitch = 0.f,
+           float movement_speed = 2.5f,
+           float mouse_sentitivity = 0.1f,
+           float fov = 45.0f);
 
     /// \defgroup CameraGetters.
 
@@ -110,6 +109,6 @@ private:
     float m_fov;
 };
 
-}
+} // namespace spear
 
 #endif

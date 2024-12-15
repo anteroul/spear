@@ -40,4 +40,4 @@ void Renderer::setBackgroundColor(float r, float g, float b, float a)
     glClearColor(r, g, b, a);
 }
 
-}
+} // namespace spear::rendering::opengl

@@ -1,17 +1,17 @@
-#include <SDL3/SDL_video.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 #include <spear/window.hh>
 
-#include <SDL3/SDL.h>
 #include <GL/glew.h>
+#include <SDL3/SDL.h>
 
 #include <iostream>
 
 namespace spear
 {
 
-Window::Window(const std::string& window_name, Size size, rendering::API api) :
-    m_window(nullptr), m_size(size), m_api(api)
+Window::Window(const std::string& window_name, Size size, rendering::API api)
+    : m_window(nullptr), m_size(size), m_api(api)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -60,7 +60,7 @@ void Window::createWindow(const std::string& title, Size size, rendering::API ap
             }
             break;
         case rendering::API::Vulkan:
-            //flags = SDL_WINDOW_VULKAN;
+            // flags = SDL_WINDOW_VULKAN;
         case rendering::API::Metal:
         case rendering::API::DirectX12:
             perror("Unimplemented");
@@ -82,7 +82,7 @@ void Window::initializeContext(rendering::API api)
                 return;
             }
             // vsync
-            //SDL_GL_SetSwapInterval(1);
+            // SDL_GL_SetSwapInterval(1);
             std::cout << "OpenGL context initialized.\n";
             break;
         case rendering::API::Vulkan:
@@ -111,5 +111,4 @@ void Window::resize()
     SDL_GetWindowSize(m_window, &m_size.x, &m_size.y);
 }
 
-}
-
+} // namespace spear

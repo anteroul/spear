@@ -1,9 +1,9 @@
 #ifndef SPEAR_SHADER_HH
 #define SPEAR_SHADER_HH
 
-#include <string>
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include <glm/mat4x4.hpp>
 
@@ -70,6 +70,6 @@ private:
     uint32_t m_id = 0;
 };
 
-}
+} // namespace spear::rendering
 
 #endif

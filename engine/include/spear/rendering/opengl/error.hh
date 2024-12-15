@@ -16,6 +16,6 @@ static void openglError(const char* label)
     }
 }
 
-}
+} // namespace spear::rendering::opengl
 
 #endif

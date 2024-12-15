@@ -12,7 +12,7 @@ void EventHandler::handleEvents()
         auto it = callbacks.find(event.type);
         if (it != callbacks.end())
         {
-            it->second(event);  // Call the registered callback
+            it->second(event); // Call the registered callback
         }
 
         // If no callback was set for SDL_QUIT, set running to false directly.
@@ -23,4 +23,4 @@ void EventHandler::handleEvents()
     }
 }
 
-}
+} // namespace spear
