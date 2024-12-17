@@ -1,8 +1,8 @@
 #ifndef SPEAR_STB_TEXTURE_HH
 #define SPEAR_STB_TEXTURE_HH
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 namespace spear
 {
@@ -13,6 +13,6 @@ struct StbTexture
     uint32_t m_texture;
 };
 
-}
+} // namespace spear
 
 #endif

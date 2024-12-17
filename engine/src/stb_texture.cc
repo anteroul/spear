@@ -1,5 +1,5 @@
-#include <spear/stb_texture.hh>
 #include <spear/spear_root.hh>
+#include <spear/stb_texture.hh>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "../third_party/stb_image.h"
@@ -46,4 +46,4 @@ StbTexture::StbTexture(const std::string& path)
     std::cout << "Created texture: " << used_path << " using stb" << std::endl;
 }
 
-}
+} // namespace spear

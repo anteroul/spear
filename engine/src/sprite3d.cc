@@ -63,8 +63,8 @@ void Sprite3D::initialize()
 
 void Sprite3D::loadImage(const std::string& path)
 {
-    //m_texture.loadFile(path);
-    //m_texture.bind();
+    // m_texture.loadFile(path);
+    // m_texture.bind();
 }
 
 } // namespace spear
