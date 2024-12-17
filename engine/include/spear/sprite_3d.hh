@@ -48,23 +48,13 @@ private:
     uint32_t m_vao = 0, m_vbo = 0, m_ebo = 0;
 
     // Vertices for a quad.
-    /*
-    const float m_vertices[20] = {
-        // Positions        // Texture Coords
-        0.0f, 1.0f, 0.0f,   0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-        1.0f, 0.0f, 0.0f,   1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,   0.0f, 0.0f
-    };
-    */
-
     // clang-format off
     const float m_vertices[20] = {
         // Positions        // Texture Coords
-       -0.5f,  0.5f, 0.0f,  0.0f, 1.0f, // Top-left
-        0.5f,  0.5f, 0.0f,  1.0f, 1.0f, // Top-right
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // Bottom-right
-       -0.5f, -0.5f, 0.0f,  0.0f, 0.0f  // Bottom-left
+       -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, // Top-left
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, // Top-right
+        0.5f, 0.5f,  0.0f,  1.0f, 1.0f, // Bottom-right
+       -0.5f, 0.5f,  0.0f,  0.0f, 1.0f  // Bottom-left
     };
 
     const uint32_t m_indices[6] = {

@@ -25,9 +25,10 @@ set(SOURCES
     src/mesh.cc
     src/camera.cc
     src/sprite3d.cc
+    src/stb_texture.cc
 
     # Shapes
-    #src/shapes/cube.cc
+    src/shapes/cube.cc
     src/shapes/shape.cc
     src/shapes/quad.cc
 

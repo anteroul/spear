@@ -12,7 +12,8 @@ enum class ShaderType
     basic,
     lighting,
     sprite3D,
-    quad
+    quad,
+    cube
 };
 
 struct ShaderFileData

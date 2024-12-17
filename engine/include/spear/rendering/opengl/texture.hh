@@ -11,7 +11,7 @@ class Texture : public BaseTexture
 {
 public:
     /// Constructor.
-    Texture();
+    Texture(const std::string& path, bool asset_path = true);
 
     /// Destructor.
     ~Texture();
@@ -27,9 +27,6 @@ public:
 
     /// Deleted copy assignment.
     Texture& operator=(const Texture&) = delete;
-
-    // Load texture from file.
-    bool loadFile(const std::string& path, bool asset_path = true);
 
     // Bind texture
     void bind(uint32_t unit = 0) const override;

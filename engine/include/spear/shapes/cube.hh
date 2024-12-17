@@ -1,9 +1,10 @@
-#ifndef SPEAR_SHAPE_HH
-#define SPEAR_SHAPE_HH
+#ifndef SPEAR_CUBE_HH
+#define SPEAR_CUBE_HH
 
+#include "spear/rendering/opengl/texture.hh"
 #include <spear/camera.hh>
-#include <spear/rendering/opengl/texture.hh>
 #include <spear/shapes/shape.hh>
+#include <spear/stb_texture.hh>
 
 #include <vector>
 
@@ -13,7 +14,7 @@ namespace spear
 class Cube : public Shape
 {
 public:
-    Cube(rendering::opengl::Shader& shader, rendering::opengl::Texture& texture, const glm::vec3& color);
+    Cube(const glm::vec4& color, const std::string& path);
 
     // Mesh::render implementation.
     void render(Camera& camera) override;
@@ -24,8 +25,10 @@ private:
     void create(std::vector<float>&& vertexBufferData, std::vector<float>&& uvData);
 
 private:
+    //StbTexture m_texture;
+    rendering::opengl::Texture m_texture;
     uint32_t m_vao;
-    glm::vec3 m_color;
+    glm::vec4 m_color;
     uint32_t m_vertexDataSize;
     uint32_t m_uvDataSize;
 };

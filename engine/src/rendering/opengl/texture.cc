@@ -1,5 +1,5 @@
-#include "spear/rendering/opengl/error.hh"
 #include <spear/rendering/opengl/texture.hh>
+#include <spear/rendering/opengl/error.hh>
 #include <spear/spear_root.hh>
 
 #include <GL/glew.h>
@@ -9,35 +9,6 @@
 
 namespace spear::rendering::opengl
 {
-
-Texture::Texture()
-    : BaseTexture()
-{
-    if (IMG_Init(IMG_INIT_PNG) == 0)
-    {
-        std::cerr << "IMG_Init failed: " << SDL_GetError() << std::endl;
-    }
-}
-
-Texture::~Texture()
-{
-    free();
-    IMG_Quit();
-}
-
-Texture::Texture(Texture&& other)
-    : BaseTexture(std::move(other))
-{
-}
-
-Texture& Texture::operator=(Texture&& other)
-{
-    if (this != &other)
-    {
-        BaseTexture::operator=(std::move(other));
-    }
-    return *this;
-}
 
 GLenum SDLFormatToOpenGLFormat(SDL_PixelFormat sdlFormat)
 {
@@ -59,12 +30,11 @@ GLenum SDLFormatToOpenGLFormat(SDL_PixelFormat sdlFormat)
     }
 }
 
-// Load texture from file (expects an external renderer setup)
-bool Texture::loadFile(const std::string& path, bool asset_path)
+Texture::Texture(const std::string& path, bool asset_path)
+    : BaseTexture()
 {
     rendering::opengl::openglError("before Texture loadfile");
 
-    free();
     std::string used_path = asset_path ? spearRoot() + "/assets/" + path : path;
 
     std::cout << "Loading image: " << used_path << std::endl;
@@ -75,15 +45,24 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
     {
         std::cerr << "Failed to load image: " << path
                   << " | SDL_Error: " << SDL_GetError() << std::endl;
-        return false;
+        return;
     }
 
     // Determine the format.
     GLenum format = SDLFormatToOpenGLFormat(surface->format);
+    if (format == 0 || (format != GL_RGB && format != GL_RGBA))
+    {
+        std::cerr << "Unsupported surface format for image: " << path << std::endl;
+        SDL_DestroySurface(surface);
+        return;
+    }
 
     // Generate OpenGL texture.
     glGenTextures(1, &m_texture);
+    rendering::opengl::openglError("glGenTextures");
+
     glBindTexture(GL_TEXTURE_2D, m_texture);
+    rendering::opengl::openglError("glBindTexture");
 
     // Set texture parameters.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -91,30 +70,59 @@ bool Texture::loadFile(const std::string& path, bool asset_path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    rendering::opengl::openglError("glTexParameteri");
+
     // Upload texture data to GPU.
     glTexImage2D(
             GL_TEXTURE_2D,
             0,
-            // format,
-            GL_RGBA,
+            format,
+            //GL_RGBA,
             surface->w,
             surface->h,
             0,
             format,
             GL_UNSIGNED_BYTE,
             surface->pixels);
+    rendering::opengl::openglError("glTexImage2D");
+
     glGenerateMipmap(GL_TEXTURE_2D);
+    rendering::opengl::openglError("glGenerateMipmap");
 
     // Store dimensions.
     m_width = surface->w;
     m_height = surface->h;
 
-    // Unbind texture and free image data.
+    std::cout << "Texture width: " << m_width << std::endl;
+    std::cout << "Texture height: " << m_height << std::endl;
+    std::cout << "Format: " << format << std::endl;
+
+    // Free image data.
     SDL_DestroySurface(surface);
+
+    // Unbind the texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
     rendering::opengl::openglError("Texture loadfile");
-    return true;
+}
+
+Texture::~Texture()
+{
+    free();
+}
+
+Texture::Texture(Texture&& other)
+    : BaseTexture(std::move(other))
+{
+}
+
+Texture& Texture::operator=(Texture&& other)
+{
+    if (this != &other)
+    {
+        BaseTexture::operator=(std::move(other));
+    }
+    return *this;
 }
 
 void Texture::bind(uint32_t unit) const
