@@ -25,7 +25,7 @@ private:
     void create(std::vector<float>&& vertexBufferData, std::vector<float>&& uvData);
 
 private:
-    //StbTexture m_texture;
+    // StbTexture m_texture;
     rendering::opengl::Texture m_texture;
     uint32_t m_vao;
     glm::vec4 m_color;

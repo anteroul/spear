@@ -1,5 +1,5 @@
-#include <spear/rendering/opengl/texture.hh>
 #include <spear/rendering/opengl/error.hh>
+#include <spear/rendering/opengl/texture.hh>
 #include <spear/spear_root.hh>
 
 #include <GL/glew.h>
@@ -77,7 +77,7 @@ Texture::Texture(const std::string& path, bool asset_path)
             GL_TEXTURE_2D,
             0,
             format,
-            //GL_RGBA,
+            // GL_RGBA,
             surface->w,
             surface->h,
             0,

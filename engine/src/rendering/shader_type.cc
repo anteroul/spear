@@ -56,7 +56,8 @@ ShaderFileData getShaderFiles(ShaderType type, API api)
                     std::string fragPath = spearRoot() + "/shaders/cube_fragment.glsl";
                     std::cout << "Selecting opengl shaders:\n"
                               << vertexPath << "\n"
-                              << fragPath << "\n" << std::endl;
+                              << fragPath << "\n"
+                              << std::endl;
                     return {vertexPath, fragPath};
                 }
             }
