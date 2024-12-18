@@ -4,7 +4,8 @@
 #include <spear/rendering/base_texture.hh>
 #include <spear/rendering/opengl/error.hh>
 #include <spear/rendering/opengl/shader.hh>
-#include <spear/rendering/opengl/texture.hh>
+
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 #include <spear/mesh.hh>
 #include <spear/transform.hh>
@@ -38,7 +39,7 @@ public:
     }
 
 private:
-    rendering::opengl::Texture m_texture;
+    rendering::opengl::SDLTexture m_texture;
 
     // Input data.
     glm::vec3 m_position;

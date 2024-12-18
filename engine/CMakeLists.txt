@@ -25,7 +25,6 @@ set(SOURCES
     src/mesh.cc
     src/camera.cc
     src/sprite3d.cc
-    src/stb_texture.cc
 
     # Shapes
     src/shapes/cube.cc
@@ -37,9 +36,13 @@ set(SOURCES
     src/rendering/base_shader.cc
     src/rendering/base_texture.cc
     src/rendering/shader_type.cc
+
+    # Rendering OPENGL
     src/rendering/opengl/renderer.cc
     src/rendering/opengl/shader.cc
-    src/rendering/opengl/texture.cc
+    src/rendering/opengl/texture/texture.cc
+    src/rendering/opengl/texture/sdl_texture.cc
+    src/rendering/opengl/texture/stb_texture.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})

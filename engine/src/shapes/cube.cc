@@ -1,4 +1,3 @@
-#include "spear/transform.hh"
 #include <spear/rendering/opengl/error.hh>
 #include <spear/shapes/cube.hh>
 
@@ -72,7 +71,7 @@ void Cube::render(Camera& camera)
 
     // Unset, unbind
     glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    m_texture.unbind();
     glUseProgram(0);
 }
 

@@ -27,7 +27,9 @@ public:
     virtual ~BaseTexture()
     {
     }
+
     virtual void bind(uint32_t unit = 0) const = 0;
+    virtual void unbind(uint32_t unit = 0) = 0;
 
     int getWidth() const
     {

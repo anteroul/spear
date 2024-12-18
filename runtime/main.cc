@@ -7,7 +7,6 @@
 
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
-#include <spear/rendering/opengl/texture.hh>
 
 #include <iostream>
 

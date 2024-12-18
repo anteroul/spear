@@ -1,10 +1,11 @@
 #ifndef SPEAR_CUBE_HH
 #define SPEAR_CUBE_HH
 
-#include "spear/rendering/opengl/texture.hh"
 #include <spear/camera.hh>
 #include <spear/shapes/shape.hh>
-#include <spear/stb_texture.hh>
+
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
+#include <spear/rendering/opengl/texture/stb_texture.hh>
 
 #include <vector>
 
@@ -14,6 +15,8 @@ namespace spear
 class Cube : public Shape
 {
 public:
+    /// \param color The color of the sides of the cube.
+    /// \param path The fixed path of the texture image.
     Cube(const glm::vec4& color, const std::string& path);
 
     // Mesh::render implementation.
@@ -25,8 +28,8 @@ private:
     void create(std::vector<float>&& vertexBufferData, std::vector<float>&& uvData);
 
 private:
-    // StbTexture m_texture;
-    rendering::opengl::Texture m_texture;
+    // rendering::opengl::SDLTexture m_texture;
+    rendering::opengl::STBTexture m_texture;
     uint32_t m_vao;
     glm::vec4 m_color;
     uint32_t m_vertexDataSize;

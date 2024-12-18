@@ -1,5 +1,5 @@
 #include <spear/rendering/opengl/error.hh>
-#include <spear/rendering/opengl/texture.hh>
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
 #include <spear/spear_root.hh>
 
 #include <GL/glew.h>
@@ -30,8 +30,8 @@ GLenum SDLFormatToOpenGLFormat(SDL_PixelFormat sdlFormat)
     }
 }
 
-Texture::Texture(const std::string& path, bool asset_path)
-    : BaseTexture()
+SDLTexture::SDLTexture(const std::string& path, bool asset_path)
+    : Texture()
 {
     rendering::opengl::openglError("before Texture loadfile");
 
@@ -77,7 +77,6 @@ Texture::Texture(const std::string& path, bool asset_path)
             GL_TEXTURE_2D,
             0,
             format,
-            // GL_RGBA,
             surface->w,
             surface->h,
             0,
@@ -106,43 +105,26 @@ Texture::Texture(const std::string& path, bool asset_path)
     rendering::opengl::openglError("Texture loadfile");
 }
 
-Texture::~Texture()
+SDLTexture::~SDLTexture()
 {
     free();
 }
 
-Texture::Texture(Texture&& other)
-    : BaseTexture(std::move(other))
+SDLTexture::SDLTexture(SDLTexture&& other)
+    : Texture(std::move(other))
 {
 }
 
-Texture& Texture::operator=(Texture&& other)
+SDLTexture& SDLTexture::operator=(SDLTexture&& other)
 {
     if (this != &other)
     {
-        BaseTexture::operator=(std::move(other));
+        Texture::operator=(std::move(other));
     }
     return *this;
 }
 
-void Texture::bind(uint32_t unit) const
-{
-    if (m_texture == 0)
-    {
-        std::cerr << "Attempted to bind an uninitialized texture." << std::endl;
-        return;
-    }
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-}
-
-void unbind(uint32_t unit)
-{
-    glActiveTexture(GL_TEXTURE0 + unit);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void Texture::free()
+void SDLTexture::free()
 {
     if (m_texture)
     {

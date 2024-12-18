@@ -2,7 +2,7 @@
 #define SPEAR_MATERIAL_HH
 
 #include <spear/rendering/opengl/shader.hh>
-#include <spear/rendering/opengl/texture.hh>
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 #include <spear/rendering/base_shader.hh>
 #include <spear/rendering/base_texture.hh>
