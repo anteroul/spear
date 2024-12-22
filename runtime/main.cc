@@ -8,8 +8,6 @@
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
 
-#include <iostream>
-
 int main()
 {
     const std::string window_name = "Spear application";
@@ -18,6 +16,8 @@ int main()
 
     spear::Window window(window_name, window_size, gl_api);
     auto w_size = window.getSize();
+    std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
+
     spear::rendering::opengl::Renderer renderer(window.getSDLWindow());
 
     renderer.init();
@@ -67,14 +67,21 @@ int main()
         } });
 
     // Update window size.
-    eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window](const SDL_Event&)
-                                  { window.resize(); });
+    eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window, &renderer](const SDL_Event&)
+                                  {
+                                        std::cout << "Window resized!" << std::endl;
+                                        window.resize();
+                                        auto w_size = window.getSize();
+                                        renderer.setViewPort(w_size.x, w_size.y); });
 
     spear::Cube cube(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "niilo.jpg");
 
     while (true)
     {
         renderer.render();
+        cube.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        cube.rotate(0.01f, glm::vec3(1.0f, 0.0f, 0.0f));
+        cube.rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
         cube.render(camera);
         eventHandler.handleEvents();
         window.update(gl_api);
