@@ -1,4 +1,4 @@
-#include <spear/shapes/shape.hh>
+#include <spear/rendering/shapes/shape.hh>
 
 namespace spear
 {

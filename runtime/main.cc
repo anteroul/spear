@@ -1,12 +1,11 @@
 #include <spear/camera.hh>
 #include <spear/event_handler.hh>
-#include <spear/shapes/cube.hh>
-#include <spear/shapes/quad.hh>
 #include <spear/sprite_3d.hh>
 #include <spear/window.hh>
 
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
+#include <spear/rendering/opengl/shapes/cube.hh>
 
 int main()
 {
@@ -74,7 +73,9 @@ int main()
                                         auto w_size = window.getSize();
                                         renderer.setViewPort(w_size.x, w_size.y); });
 
-    spear::Cube cube(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), "niilo.jpg");
+    spear::rendering::opengl::SDLTexture texture("niilo.jpg");
+
+    spear::Cube cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(texture)));
 
     while (true)
     {

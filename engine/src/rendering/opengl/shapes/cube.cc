@@ -1,5 +1,5 @@
 #include <spear/rendering/opengl/error.hh>
-#include <spear/shapes/cube.hh>
+#include <spear/rendering/opengl/shapes/cube.hh>
 
 #include <SDL3/SDL.h>
 
@@ -8,9 +8,9 @@
 namespace spear
 {
 
-Cube::Cube(const glm::vec4& color, const std::string& path)
+Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color)
     : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube))),
-      m_texture(path),
+      m_texture(texture),
       m_color(color)
 {
     const glm::vec3 position = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -56,7 +56,7 @@ void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& 
 
 void Cube::render(Camera& camera)
 {
-    m_texture.bind();
+    m_texture->bind();
 
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Shape::Entity::Transform::getModel();
     Shape::Mesh::m_shader->use();
@@ -71,7 +71,7 @@ void Cube::render(Camera& camera)
 
     // Unset, unbind
     glBindVertexArray(0);
-    m_texture.unbind();
+    m_texture->unbind();
     glUseProgram(0);
 }
 

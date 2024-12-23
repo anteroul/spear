@@ -27,9 +27,7 @@ set(SOURCES
     src/sprite3d.cc
 
     # Shapes
-    src/shapes/cube.cc
-    src/shapes/shape.cc
-    src/shapes/quad.cc
+    #src/shapes/quad.cc
 
     # Rendering
     src/rendering/api.cc
@@ -37,12 +35,20 @@ set(SOURCES
     src/rendering/base_texture.cc
     src/rendering/shader_type.cc
 
-    # Rendering OPENGL
+    # Rendering Shapes
+    src/rendering/shapes/shape.cc
+
+    # Rendering OpenGL
     src/rendering/opengl/renderer.cc
     src/rendering/opengl/shader.cc
+
+    # Rendering OpenGL Texture
     src/rendering/opengl/texture/texture.cc
     src/rendering/opengl/texture/sdl_texture.cc
     src/rendering/opengl/texture/stb_texture.cc
+
+    # Rendering OpenGL Shapes
+    src/rendering/opengl/shapes/cube.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
