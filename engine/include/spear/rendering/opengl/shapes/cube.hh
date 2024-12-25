@@ -1,16 +1,16 @@
-#ifndef SPEAR_CUBE_HH
-#define SPEAR_CUBE_HH
+#ifndef SPEAR_RENDERING_OPENGL_SHAPES_CUBE_HH
+#define SPEAR_RENDERING_OPENGL_SHAPES_CUBE_HH
 
 #include <spear/camera.hh>
 #include <spear/rendering/base_texture.hh>
-#include <spear/rendering/shapes/shape.hh>
+#include <spear/rendering/shapes/base_cube.hh>
 
 #include <vector>
 
 namespace spear
 {
 
-class Cube : public Shape
+class Cube : public BaseCube
 {
 public:
     /// Constructor.
@@ -27,7 +27,6 @@ private:
     void create(std::vector<float>&& vertexBufferData, std::vector<float>&& uvData);
 
 private:
-    std::shared_ptr<rendering::BaseTexture> m_texture;
     uint32_t m_vao;
     glm::vec4 m_color;
     uint32_t m_vertexDataSize;

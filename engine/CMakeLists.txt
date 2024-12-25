@@ -37,6 +37,7 @@ set(SOURCES
 
     # Rendering Shapes
     src/rendering/shapes/shape.cc
+    src/rendering/shapes/base_cube.cc
 
     # Rendering OpenGL
     src/rendering/opengl/renderer.cc
