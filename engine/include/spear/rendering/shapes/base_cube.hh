@@ -11,10 +11,11 @@ class BaseCube : public Shape
 public:
     /// Constructor.
     BaseCube(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture);
+
 protected:
     std::shared_ptr<rendering::BaseTexture> m_texture;
 };
 
-}
+} // namespace spear
 
 #endif

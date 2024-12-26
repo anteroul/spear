@@ -2,6 +2,7 @@
 #define SPEAR_RENDERING_BASE_TEXTURE_HH
 
 #include <cstdint>
+#include <memory>
 
 namespace spear::rendering
 {

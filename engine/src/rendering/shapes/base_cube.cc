@@ -9,4 +9,4 @@ BaseCube::BaseCube(std::shared_ptr<rendering::BaseShader> shader, std::shared_pt
 {
 }
 
-}
+} // namespace spear
