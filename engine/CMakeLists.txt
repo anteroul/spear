@@ -27,7 +27,7 @@ set(SOURCES
     src/sprite3d.cc
 
     # Shapes
-    #src/shapes/quad.cc
+    src/shapes/quad.cc
 
     # Rendering
     src/rendering/api.cc

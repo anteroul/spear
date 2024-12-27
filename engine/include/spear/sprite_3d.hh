@@ -23,7 +23,6 @@ public:
     ~Sprite3D();
 
     void initialize();
-    void loadImage(const std::string& path);
 
     /// Mesh::render implementation.
     void render(Camera& camera) override;

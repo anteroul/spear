@@ -6,8 +6,9 @@ namespace spear
 
 Sprite3D::Sprite3D(glm::vec3 position)
     : Mesh(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::sprite3D))), Transform(),
-      m_position(position), m_sampler(GL_TEXTURE_2D), m_texture("lol")
+      m_texture("niilo.jpg"), m_position(position), m_sampler(GL_TEXTURE_2D)
 {
+    Transform::translate(m_position);
 }
 
 Sprite3D::~Sprite3D()
@@ -22,12 +23,11 @@ Sprite3D::~Sprite3D()
 
 void Sprite3D::render(Camera& camera)
 {
+    m_texture.bind();
+
     Mesh::m_shader->use();
     glm::mat4 mvp = Transform::getModel() * camera.getViewMatrix() * camera.getProjectionMatrix();
     m_shader->setMat4("mvp", mvp);
-
-    // Ensure texture is bound to unit 0
-    m_texture.bind();
     m_shader->setSampler2D("textureSampler", 0);
 
     // Render quad
@@ -59,12 +59,6 @@ void Sprite3D::initialize()
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
-}
-
-void Sprite3D::loadImage(const std::string& path)
-{
-    // m_texture.loadFile(path);
-    // m_texture.bind();
 }
 
 } // namespace spear

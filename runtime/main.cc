@@ -1,8 +1,9 @@
-#include <memory>
 #include <spear/camera.hh>
 #include <spear/event_handler.hh>
-#include <spear/sprite_3d.hh>
 #include <spear/window.hh>
+
+#include <spear/shapes/quad.hh>
+#include <spear/sprite_3d.hh>
 
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
@@ -78,23 +79,27 @@ int main()
 
     // Texture generation.
     spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
-    spear::rendering::opengl::SDLTexture rock_texture("wallnut.jpg");
+    spear::rendering::opengl::SDLTexture wallnut_texture("wallnut.jpg");
 
-    spear::Cube niilo_cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
-    spear::Cube floor(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(rock_texture)));
+    spear::rendering::opengl::Cube niilo_cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
+    niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
+
+    spear::rendering::opengl::Cube floor(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(wallnut_texture)));
     floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
     floor.scale(glm::vec3(1000.f, 1.0f, 1000.f));
 
+    spear::Quad quad(glm::vec3(1.0f, 0.5f, 0.5f));
+    quad.initialize(glm::vec3(1.0f, 1.0f, 2.0f));
+
     while (true)
     {
-        niilo_cube.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
-        niilo_cube.rotate(0.01f, glm::vec3(1.0f, 0.0f, 0.0f));
-        niilo_cube.rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+        niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
 
         renderer.render();
 
         niilo_cube.render(camera);
         floor.render(camera);
+        quad.render(camera);
 
         eventHandler.handleEvents();
         window.update(gl_api);

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace spear
+namespace spear::rendering::opengl
 {
 
 class Cube : public BaseCube
@@ -29,10 +29,8 @@ private:
 private:
     uint32_t m_vao;
     glm::vec4 m_color;
-    uint32_t m_vertexDataSize;
-    uint32_t m_uvDataSize;
 };
 
-} // namespace spear
+} // namespace spear::rendering::opengl
 
 #endif

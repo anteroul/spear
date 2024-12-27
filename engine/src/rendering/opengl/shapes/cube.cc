@@ -5,7 +5,7 @@
 
 #include <GL/glew.h>
 
-namespace spear
+namespace spear::rendering::opengl
 {
 
 Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color)
@@ -19,13 +19,11 @@ Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& col
 
 void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& uv_data)
 {
-    m_vertexDataSize = vertex_buffer_data.size();
-    assert(vertex_buffer_data.size() == 108);
-    assert(m_vertexDataSize == vertex_buffer_data.size());
+    uint32_t vertexDataSize = vertex_buffer_data.size();
+    assert(vertexDataSize == 108);
 
-    m_uvDataSize = uv_data.size();
-    assert(uv_data.size() == 72);
-    assert(m_uvDataSize == uv_data.size());
+    uint32_t uvDataSize = uv_data.size();
+    assert(uvDataSize == 72);
 
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
@@ -34,7 +32,7 @@ void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& 
     uint32_t vertexVBO;
     glGenBuffers(1, &vertexVBO);
     glBindBuffer(GL_ARRAY_BUFFER, vertexVBO);
-    glBufferData(GL_ARRAY_BUFFER, m_vertexDataSize * sizeof(float), vertex_buffer_data.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexDataSize * sizeof(float), vertex_buffer_data.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(0);
@@ -42,7 +40,7 @@ void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& 
     uint32_t uvVBO;
     glGenBuffers(1, &uvVBO);
     glBindBuffer(GL_ARRAY_BUFFER, uvVBO);
-    glBufferData(GL_ARRAY_BUFFER, m_uvDataSize * sizeof(float), uv_data.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, uvDataSize * sizeof(float), uv_data.data(), GL_STATIC_DRAW);
 
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
     glEnableVertexAttribArray(1);
@@ -174,4 +172,4 @@ std::vector<float> Cube::createUvData()
     // clang-format on
 }
 
-} // namespace spear
+} // namespace spear::rendering::opengl

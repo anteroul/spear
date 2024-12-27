@@ -2,7 +2,7 @@
 #define SPEAR_CUBE2_HH
 
 #include <spear/rendering/opengl/shader.hh>
-#include <spear/shapes/shape.hh>
+#include <spear/rendering/shapes/shape.hh>
 
 #include <vector>
 
