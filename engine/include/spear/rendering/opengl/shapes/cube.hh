@@ -2,15 +2,14 @@
 #define SPEAR_RENDERING_OPENGL_SHAPES_CUBE_HH
 
 #include <spear/camera.hh>
-#include <spear/rendering/base_texture.hh>
-#include <spear/rendering/shapes/base_cube.hh>
+#include <spear/rendering/shapes/textured_shape.hh>
 
 #include <vector>
 
 namespace spear::rendering::opengl
 {
 
-class Cube : public BaseCube
+class Cube : public TexturedShape
 {
 public:
     /// Constructor.

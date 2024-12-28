@@ -8,6 +8,7 @@
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
 #include <spear/rendering/opengl/shapes/quad.hh>
+#include <spear/rendering/opengl/shapes/sphere.hh>
 #include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 int main()
@@ -90,16 +91,21 @@ int main()
     spear::rendering::opengl::Quad quad(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
     quad.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
+    spear::rendering::opengl::Sphere niilo_sphere(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
+    niilo_sphere.translate(glm::vec3(5.0f, 1.0f, 1.0f));
+
     while (true)
     {
         niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+        niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
 
         renderer.render();
 
         niilo_cube.render(camera);
         floor.render(camera);
         quad.render(camera);
+        niilo_sphere.render(camera);
 
         eventHandler.handleEvents();
         window.update(gl_api);

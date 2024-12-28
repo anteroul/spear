@@ -9,7 +9,7 @@ namespace spear::rendering::opengl
 {
 
 Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color)
-    : BaseCube(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, color)
+    : TexturedShape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, color)
 {
     const glm::vec3 position = glm::vec3(1.0f, 1.0f, 1.0f);
     create(createVertexBufferData(position), createUvData());

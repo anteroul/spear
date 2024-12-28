@@ -34,7 +34,7 @@ set(SOURCES
 
     # Rendering Shapes
     src/rendering/shapes/shape.cc
-    src/rendering/shapes/base_cube.cc
+    src/rendering/shapes/textured_shape.cc
 
     # Rendering OpenGL
     src/rendering/opengl/renderer.cc
@@ -48,6 +48,7 @@ set(SOURCES
     # Rendering OpenGL Shapes
     src/rendering/opengl/shapes/cube.cc
     src/rendering/opengl/shapes/quad.cc
+    src/rendering/opengl/shapes/sphere.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
