@@ -1,19 +1,19 @@
-#ifndef SPEAR_CUBE2_HH
-#define SPEAR_CUBE2_HH
+#ifndef SPEAR_RENDERING_OPENGL_SHAPES_QUAD_HH
+#define SPEAR_RENDERING_OPENGL_SHAPES_QUAD_HH
 
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/shapes/shape.hh>
 
 #include <vector>
 
-namespace spear
+namespace spear::rendering::opengl
 {
 
 class Quad : public Shape
 {
 public:
     /// Constructor.
-    Quad(const glm::vec3& color);
+    Quad(const glm::vec4& color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
     /// Destructor.
     ~Quad();
@@ -29,11 +29,10 @@ public:
     void render(Camera& camera) override;
 
 private:
-    glm::vec3 m_color;
     uint32_t m_vao, m_vbo, m_ebo;
     std::vector<float> m_vertices;
 };
 
-} // namespace spear
+} // namespace spear::rendering::opengl
 
 #endif

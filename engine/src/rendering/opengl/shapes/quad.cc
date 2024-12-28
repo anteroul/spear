@@ -1,15 +1,15 @@
-#include <GL/glew.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <spear/shapes/quad.hh>
+#include <spear/rendering/opengl/shapes/quad.hh>
 
-namespace spear
+#include <GL/glew.h>
+
+namespace spear::rendering::opengl
 {
 
-Quad::Quad(const glm::vec3& color)
-    : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::quad))),
-      m_color(color),
+Quad::Quad(const glm::vec4& color)
+    : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::quad)), color),
       m_vao(0), m_vbo(0), m_ebo(0)
 {
+    initialize(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 Quad::~Quad()
@@ -84,7 +84,7 @@ void Quad::initialize(const glm::vec3& position)
 void Quad::render(Camera& camera)
 {
     m_shader->use();
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * glm::mat4(1);
+    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Transform::getModel();
     Mesh::m_shader->setMat4("mvp", mvp);
 
     // Render the cube
@@ -93,4 +93,4 @@ void Quad::render(Camera& camera)
     glBindVertexArray(0);
 }
 
-} // namespace spear
+} // namespace spear::rendering::opengl

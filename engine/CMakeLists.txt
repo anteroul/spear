@@ -26,9 +26,6 @@ set(SOURCES
     src/camera.cc
     src/sprite3d.cc
 
-    # Shapes
-    src/shapes/quad.cc
-
     # Rendering
     src/rendering/api.cc
     src/rendering/base_shader.cc
@@ -50,6 +47,7 @@ set(SOURCES
 
     # Rendering OpenGL Shapes
     src/rendering/opengl/shapes/cube.cc
+    src/rendering/opengl/shapes/quad.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})

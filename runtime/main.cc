@@ -2,13 +2,12 @@
 #include <spear/event_handler.hh>
 #include <spear/window.hh>
 
-#include <spear/shapes/quad.hh>
 #include <spear/sprite_3d.hh>
 
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
-
+#include <spear/rendering/opengl/shapes/quad.hh>
 #include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 int main()
@@ -88,12 +87,13 @@ int main()
     floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
     floor.scale(glm::vec3(1000.f, 1.0f, 1000.f));
 
-    spear::Quad quad(glm::vec3(1.0f, 0.5f, 0.5f));
-    quad.initialize(glm::vec3(1.0f, 1.0f, 2.0f));
+    spear::rendering::opengl::Quad quad(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
+    quad.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
     while (true)
     {
         niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
+        quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
 
         renderer.render();
 

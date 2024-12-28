@@ -28,7 +28,6 @@ private:
 
 private:
     uint32_t m_vao;
-    glm::vec4 m_color;
 };
 
 } // namespace spear::rendering::opengl

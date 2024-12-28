@@ -1,11 +1,12 @@
 #include <spear/rendering/shapes/shape.hh>
 
-namespace spear
+namespace spear::rendering
 {
 
-Shape::Shape(std::shared_ptr<rendering::BaseShader> shader)
-    : Mesh(std::move(shader))
+Shape::Shape(std::shared_ptr<rendering::BaseShader> shader, const glm::vec4& color)
+    : Mesh(std::move(shader)),
+      m_color(color)
 {
 }
 
-} // namespace spear
+} // namespace spear::rendering
