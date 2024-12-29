@@ -38,6 +38,15 @@ public:
         return m_size;
     }
 
+    /// Set visibility of the cursor.
+    /// True for hidden cursor, false for visible cursor (default).
+    void hideCursor(bool hide);
+
+    /// Grab the mouse on to the screen.
+    void setMouseGrab(bool grabbed);
+
+    void setRelativeMouseMode(bool is_relative);
+
 private:
     void createWindow(const std::string& title, Size size, rendering::API api);
     void initializeContext(rendering::API api);

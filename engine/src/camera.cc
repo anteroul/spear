@@ -29,7 +29,7 @@ glm::mat4 Camera::getProjectionMatrix() const
 void Camera::rotate(float xoffset, float yoffset, bool constrain_pitch)
 {
     m_yaw += xoffset * m_mouseSensitivity;
-    m_pitch += yoffset * m_mouseSensitivity;
+    m_pitch -= yoffset * m_mouseSensitivity;
 
     if (constrain_pitch)
     {
@@ -59,7 +59,7 @@ void Camera::updateCameraVectors()
     newFront.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     m_front = glm::normalize(newFront);
 
-    // Recalculate right and up vectors
+    // Recalculate right and up vectors.
     m_right = glm::normalize(glm::cross(m_front, m_worldUp));
     m_up = glm::normalize(glm::cross(m_right, m_front));
 }

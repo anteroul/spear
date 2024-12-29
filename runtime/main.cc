@@ -18,6 +18,10 @@ int main()
     const spear::rendering::API gl_api = spear::rendering::API::OpenGL;
 
     spear::Window window(window_name, window_size, gl_api);
+    window.hideCursor(true);
+    window.setMouseGrab(true);
+    window.setRelativeMouseMode(true);
+
     auto w_size = window.getSize();
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
@@ -68,6 +72,10 @@ int main()
                 break;
             }
         } });
+
+    // Mouse movement.
+    eventHandler.registerCallback(SDL_EVENT_MOUSE_MOTION, [&camera](const SDL_Event& event)
+                                  { camera.rotate(event.motion.xrel, event.motion.yrel); });
 
     // Update window size.
     eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window, &renderer](const SDL_Event&)

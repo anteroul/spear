@@ -1,5 +1,3 @@
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_video.h>
 #include <spear/window.hh>
 
 #include <GL/glew.h>
@@ -15,7 +13,7 @@ Window::Window(const std::string& window_name, Size size, rendering::API api)
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL2: %s\n", SDL_GetError());
+        std::cerr << "Couldn't initialize SDL3: " << SDL_GetError() << std::endl;
         return;
     }
     std::cout << "SDL initialized" << std::endl;
@@ -103,6 +101,34 @@ void Window::update(rendering::API api)
         case rendering::API::Metal:
         case rendering::API::DirectX12:
             perror("Unimplemented");
+    }
+}
+
+void Window::hideCursor(bool hide)
+{
+    if (hide)
+    {
+        SDL_HideCursor();
+    }
+    else
+    {
+        SDL_ShowCursor();
+    }
+}
+
+void Window::setMouseGrab(bool grabbed)
+{
+    if (!SDL_SetWindowMouseGrab(m_window, grabbed))
+    {
+        std::cerr << "Window: Could not set mouse grab" << std::endl;
+    }
+}
+
+void Window::setRelativeMouseMode(bool is_relative)
+{
+    if (!SDL_SetWindowRelativeMouseMode(m_window, is_relative))
+    {
+        std::cerr << "Window: Could not set relative mouse mode!" << std::endl;
     }
 }
 
