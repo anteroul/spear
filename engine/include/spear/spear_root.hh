@@ -12,6 +12,11 @@ static const std::string spearRoot()
     return SPEAR_ROOT;
 }
 
+static std::string getAssetPath(const std::string& file_name)
+{
+    return spearRoot() + "/assets/" + file_name;
+}
+
 } // namespace spear
 
 #endif

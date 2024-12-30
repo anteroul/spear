@@ -26,6 +26,9 @@ set(SOURCES
     src/camera.cc
     src/sprite3d.cc
 
+    # Model loaders
+    src/model/obj_loader.cc
+
     # Rendering
     src/rendering/api.cc
     src/rendering/base_shader.cc

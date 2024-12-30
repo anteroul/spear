@@ -1,5 +1,6 @@
 #include <spear/camera.hh>
 #include <spear/event_handler.hh>
+#include <spear/model/obj_loader.hh>
 #include <spear/window.hh>
 
 #include <spear/sprite_3d.hh>
@@ -84,6 +85,9 @@ int main()
                                         window.resize();
                                         auto w_size = window.getSize();
                                         renderer.setViewPort(w_size.x, w_size.y); });
+
+    spear::OBJLoader obj_loader;
+    obj_loader.load("test.obj");
 
     // Texture generation.
     spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
