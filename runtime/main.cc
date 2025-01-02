@@ -1,3 +1,4 @@
+#include <SDL3/SDL_keycode.h>
 #include <spear/camera.hh>
 #include <spear/event_handler.hh>
 #include <spear/model/obj_loader.hh>
@@ -5,6 +6,7 @@
 
 #include <spear/sprite_3d.hh>
 
+#include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
@@ -72,6 +74,11 @@ int main()
                 std::cout << "Move D pressed" << std::endl;
                 break;
             }
+            case SDLK_ESCAPE:
+            {
+                exit(0);
+                break;
+            }
         } });
 
     // Mouse movement.
@@ -86,12 +93,12 @@ int main()
                                         auto w_size = window.getSize();
                                         renderer.setViewPort(w_size.x, w_size.y); });
 
-    spear::OBJLoader obj_loader;
-    obj_loader.load("test.obj");
-
-    // Texture generation.
+    // Texture creation.
     spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
     spear::rendering::opengl::SDLTexture wallnut_texture("wallnut.jpg");
+
+    spear::rendering::opengl::OBJModel red_model("test.obj", std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
+    red_model.translate(glm::vec3(10.0f, 0.0f, 1.0f));
 
     spear::rendering::opengl::Cube niilo_cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
     niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -118,6 +125,8 @@ int main()
         floor.render(camera);
         quad.render(camera);
         niilo_sphere.render(camera);
+        model.render(camera);
+        red_model.render(camera);
 
         eventHandler.handleEvents();
         window.update(gl_api);

@@ -12,7 +12,7 @@ namespace spear::rendering::opengl
 class STBTexture : public Texture
 {
 public:
-    STBTexture(const std::string& path);
+    STBTexture(const std::string& path, bool asset_path = true);
 };
 
 } // namespace spear::rendering::opengl

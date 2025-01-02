@@ -52,6 +52,10 @@ set(SOURCES
     src/rendering/opengl/shapes/cube.cc
     src/rendering/opengl/shapes/quad.cc
     src/rendering/opengl/shapes/sphere.cc
+
+    # Rendering OpenGL Model
+    src/rendering/opengl/model/model.cc
+    src/rendering/opengl/model/obj_model.cc
 )
 
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})

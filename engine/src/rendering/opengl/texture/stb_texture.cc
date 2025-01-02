@@ -11,9 +11,9 @@
 namespace spear::rendering::opengl
 {
 
-STBTexture::STBTexture(const std::string& path)
+STBTexture::STBTexture(const std::string& path, bool asset_path)
 {
-    std::string used_path = spearRoot() + "/assets/" + path;
+    std::string used_path = asset_path ? getAssetPath(path) : path;
 
     // Generate texture object
     glGenTextures(1, &m_texture);
