@@ -9,7 +9,7 @@ namespace spear
 class OBJLoader : public ModelLoader
 {
 public:
-    bool load(const std::string& file_path, bool asset_path = true) override;
+    bool load(const std::string& obj_file_path, const std::string& material_file_path = "", bool asset_path = true) override;
 
     const std::vector<ModelLoader::TextureCoord>& getUvs()
     {
@@ -19,10 +19,18 @@ public:
     {
         return m_normals;
     }
+    const ModelLoader::Material& getMaterial() const
+    {
+        return m_material;
+    }
+
+private:
+    bool loadMaterial(const std::string& mtlFilePath);
 
 private:
     std::vector<ModelLoader::TextureCoord> m_textureCoords;
     std::vector<ModelLoader::Normal> m_normals;
+    ModelLoader::Material m_material;
 };
 
 } // namespace spear

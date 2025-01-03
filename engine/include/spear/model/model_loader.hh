@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <glm/vec3.hpp>
+
 namespace spear
 {
 
@@ -34,8 +36,10 @@ public:
 
     struct Material
     {
-        std::string name;
-        // TODO
+        glm::vec3 ambientColor;
+        glm::vec3 diffuseColor;
+        glm::vec3 specularColor;
+        float specularExponent;
     };
 
     struct Animation
@@ -47,7 +51,7 @@ public:
     virtual ~ModelLoader() = default;
 
     /// Load model file.
-    virtual bool load(const std::string& file_path, bool asset_path) = 0;
+    virtual bool load(const std::string& file_path, const std::string& material_file_path, bool asset_path) = 0;
 
     // Generic accessors
     virtual const std::vector<Vertex>& getVertices() const
@@ -58,10 +62,6 @@ public:
     {
         return m_faces;
     }
-    virtual const std::vector<Material>& getMaterials() const
-    {
-        return m_materials;
-    }
     virtual const std::vector<Animation>& getAnimations() const
     {
         return m_animations;
@@ -70,7 +70,6 @@ public:
 protected:
     std::vector<Vertex> m_vertices;
     std::vector<Face> m_faces;
-    std::vector<Material> m_materials;
     std::vector<Animation> m_animations;
 };
 

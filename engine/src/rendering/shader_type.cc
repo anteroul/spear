@@ -60,6 +60,16 @@ ShaderFileData getShaderFiles(ShaderType type, API api)
                               << std::endl;
                     return {vertexPath, fragPath};
                 }
+                case ShaderType::material:
+                {
+                    std::string vertexPath = spearRoot() + "/shaders/material_vertex.glsl";
+                    std::string fragPath = spearRoot() + "/shaders/material_fragment.glsl";
+                    std::cout << "Selecting opengl shaders:\n"
+                              << vertexPath << "\n"
+                              << fragPath << "\n"
+                              << std::endl;
+                    return {vertexPath, fragPath};
+                }
             }
             break;
         }

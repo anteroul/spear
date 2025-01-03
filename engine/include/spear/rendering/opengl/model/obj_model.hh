@@ -28,6 +28,7 @@ private:
     uint32_t m_vao;
 
     std::vector<uint32_t> m_indices;
+    ModelLoader::Material m_material;
 };
 
 } // namespace spear::rendering::opengl

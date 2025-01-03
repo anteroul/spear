@@ -1,4 +1,3 @@
-#include <SDL3/SDL_keycode.h>
 #include <spear/camera.hh>
 #include <spear/event_handler.hh>
 #include <spear/model/obj_loader.hh>
@@ -125,7 +124,6 @@ int main()
         floor.render(camera);
         quad.render(camera);
         niilo_sphere.render(camera);
-        model.render(camera);
         red_model.render(camera);
 
         eventHandler.handleEvents();

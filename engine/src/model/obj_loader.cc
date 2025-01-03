@@ -8,14 +8,23 @@
 namespace spear
 {
 
-bool OBJLoader::load(const std::string& filePath, bool asset_path)
+bool OBJLoader::load(const std::string& obj_file_path, const std::string& material_file_path, bool asset_path)
 {
-    std::string path = asset_path ? getAssetPath(filePath) : filePath;
-    std::ifstream file(path);
+    std::string obj_path = asset_path ? getAssetPath(obj_file_path) : obj_file_path;
+    std::ifstream file(obj_path);
     if (!file.is_open())
     {
-        std::cerr << "Failed to open OBJ file: " << filePath << std::endl;
+        std::cerr << "Failed to open OBJ file: " << obj_path << std::endl;
         return false;
+    }
+
+    if (!material_file_path.empty() && material_file_path != "")
+    {
+        std::string mtl_path = asset_path ? getAssetPath(material_file_path) : material_file_path;
+        if (!loadMaterial(mtl_path))
+        {
+            std::cerr << "Failed to load material file: " << mtl_path << std::endl;
+        }
     }
 
     std::string line;
@@ -103,6 +112,41 @@ bool OBJLoader::load(const std::string& filePath, bool asset_path)
     }
 
     file.close();
+    return true;
+}
+
+bool OBJLoader::loadMaterial(const std::string& mtlFilePath)
+{
+    std::ifstream file(mtlFilePath);
+    if (!file.is_open())
+    {
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        std::istringstream iss(line);
+        std::string token;
+        iss >> token;
+
+        if (token == "Ka") // Ambient color
+        {
+            iss >> m_material.ambientColor.r >> m_material.ambientColor.g >> m_material.ambientColor.b;
+        }
+        else if (token == "Kd") // Diffuse color
+        {
+            iss >> m_material.diffuseColor.r >> m_material.diffuseColor.g >> m_material.diffuseColor.b;
+        }
+        else if (token == "Ks") // Specular color
+        {
+            iss >> m_material.specularColor.r >> m_material.specularColor.g >> m_material.specularColor.b;
+        }
+        else if (token == "Ns") // Specular exponent
+        {
+            iss >> m_material.specularExponent;
+        }
+    }
     return true;
 }
 

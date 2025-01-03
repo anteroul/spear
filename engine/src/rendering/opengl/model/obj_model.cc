@@ -7,11 +7,10 @@ namespace spear::rendering::opengl
 {
 
 OBJModel::OBJModel(const std::string& object_file_path, std::shared_ptr<BaseTexture> texture)
-    // TODO group shaders better.
-    : Model(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube))),
+    : Model(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material))),
       m_texture(texture)
 {
-    m_loader.load(object_file_path);
+    m_loader.load(object_file_path, "test.mtl");
     initialize();
     rendering::opengl::openglError("OBJModel: initialize");
 }
@@ -66,7 +65,11 @@ void OBJModel::initialize()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(uint32_t), m_indices.data(), GL_STATIC_DRAW);
 
-    glBindVertexArray(0); // Unbind VAO
+    // Unbind VAO.
+    glBindVertexArray(0);
+
+    // Get material data.
+    m_material = m_loader.getMaterial();
 }
 
 void OBJModel::render(Camera& camera)
@@ -75,13 +78,31 @@ void OBJModel::render(Camera& camera)
 
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Entity::Transform::getModel();
     Mesh::m_shader->use();
-
     m_shader->setMat4("mvp", mvp);
+
     m_shader->setSampler2D("textureSampler", 0);
-    m_shader->setVec4f("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
+    // Light properties (example values)
+    glm::vec3 lightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    float lightIntensity = 1.5f;
+
+    m_shader->setVec3f("light.position", lightPosition);
+    m_shader->setVec3f("light.color", lightColor);
+    m_shader->setFloat("light.intensity", lightIntensity);
+
+    // Camera position (for specular lighting)
+    glm::vec3 cameraPosition = camera.getPosition();
+    m_shader->setVec3f("cameraPosition", cameraPosition);
+
+    // Stored material data from OBJLoader.
+    m_shader->setVec3f("material.ambientColor", m_material.ambientColor);
+    m_shader->setVec3f("material.diffuseColor", m_material.diffuseColor);
+    m_shader->setVec3f("material.specularColor", m_material.specularColor);
+    m_shader->setFloat("material.specularExponent", m_material.specularExponent);
+
+    // Draw
     glBindVertexArray(m_vao);
-
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
 
     // Unset, unbind
