@@ -25,6 +25,7 @@ set(SOURCES
     src/event_handler.cc
     src/mesh.cc
     src/camera.cc
+    src/movement_controller.cc
     src/sprite3d.cc
 
     # Model loaders

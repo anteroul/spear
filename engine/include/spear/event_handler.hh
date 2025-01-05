@@ -1,6 +1,8 @@
 #ifndef SPEAR_EVENT_HANDLER_HH
 #define SPEAR_EVENT_HANDLER_HH
 
+#include <spear/movement_controller.hh>
+
 #include <SDL3/SDL_events.h>
 
 #include <functional>
@@ -20,7 +22,7 @@ public:
     }
 
     /// Process SDL events and call registered callbacks
-    void handleEvents();
+    void handleEvents(MovementController& movement_controller, float delta_time);
 
     /// Check if the application is still running
     bool isRunning() const
@@ -36,6 +38,8 @@ public:
 
 private:
     std::unordered_map<uint32_t, EventCallback> callbacks;
+    std::unordered_map<SDL_Keycode, bool> keyStates = {
+            {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
     bool running = true;
 };
 

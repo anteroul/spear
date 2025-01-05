@@ -14,10 +14,11 @@ public:
 
     float getDeltaTime();
     void delay(uint32_t ms);
+
 private:
     uint64_t m_last;
 };
 
-}
+} // namespace spear
 
 #endif

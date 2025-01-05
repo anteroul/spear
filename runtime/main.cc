@@ -1,8 +1,9 @@
-#include <spear/window.hh>
 #include <spear/camera.hh>
 #include <spear/delta_time.hh>
 #include <spear/event_handler.hh>
 #include <spear/model/obj_loader.hh>
+#include <spear/movement_controller.hh>
+#include <spear/window.hh>
 
 #include <spear/sprite_3d.hh>
 
@@ -35,51 +36,20 @@ int main()
     renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
 
     spear::Camera camera;
+    spear::MovementController movement_controller(camera);
     spear::EventHandler eventHandler;
 
+    // clang-format off
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
-                                  { std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl; });
+    {
+        std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl;
+    });
 
     eventHandler.registerCallback(SDL_EVENT_QUIT, [](const SDL_Event&)
-                                  {
+    {
         std::cout << "Quit event received. Exiting..." << std::endl;
-        exit(0); });
-
-    // Movement.
-    eventHandler.registerCallback(SDL_EVENT_KEY_DOWN, [&camera](const SDL_Event& event)
-                                  {
-        switch (event.key.key)
-        {
-            case SDLK_W:
-            {
-                camera.moveForward(camera.getSpeed());
-                std::cout << "Move W pressed" << std::endl;
-                break;
-            }
-            case SDLK_S:
-            {
-                camera.moveBackward(camera.getSpeed());
-                std::cout << "Move S pressed" << std::endl;
-                break;
-            }
-            case SDLK_A:
-            {
-                camera.moveLeft(camera.getSpeed());
-                std::cout << "Move A pressed" << std::endl;
-                break;
-            }
-            case SDLK_D:
-            {
-                camera.moveRight(camera.getSpeed());
-                std::cout << "Move D pressed" << std::endl;
-                break;
-            }
-            case SDLK_ESCAPE:
-            {
-                exit(0);
-                break;
-            }
-        } });
+        exit(0);
+    });
 
     // Mouse movement.
     eventHandler.registerCallback(SDL_EVENT_MOUSE_MOTION, [&camera](const SDL_Event& event)
@@ -87,11 +57,13 @@ int main()
 
     // Update window size.
     eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window, &renderer](const SDL_Event&)
-                                  {
-                                        std::cout << "Window resized!" << std::endl;
-                                        window.resize();
-                                        auto w_size = window.getSize();
-                                        renderer.setViewPort(w_size.x, w_size.y); });
+    {
+        std::cout << "Window resized!" << std::endl;
+        window.resize();
+        auto w_size = window.getSize();
+        renderer.setViewPort(w_size.x, w_size.y); 
+    });
+    // clang-format on
 
     // Texture creation.
     spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
@@ -114,16 +86,19 @@ int main()
     niilo_sphere.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
     spear::DeltaTime delta_time_interface;
+    std::unordered_map<SDL_Keycode, bool> keyStates = {
+            {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
 
     while (true)
     {
         float delta_time = delta_time_interface.getDeltaTime();
 
-        renderer.render();
-
         niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
         niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        // Rendering.
+        renderer.render();
 
         niilo_cube.render(camera);
         floor.render(camera);
@@ -131,7 +106,10 @@ int main()
         niilo_sphere.render(camera);
         blender_model.render(camera);
 
-        eventHandler.handleEvents();
+        // Event handling.
+        eventHandler.handleEvents(movement_controller, delta_time);
+
+        // Update SDL_Window if using OpenGL.
         window.update(gl_api);
 
         delta_time_interface.delay(16); // 60 fps.

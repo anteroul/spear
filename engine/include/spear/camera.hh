@@ -4,6 +4,9 @@
 #include <glm/mat4x2.hpp>
 #include <glm/vec3.hpp>
 
+#include <SDL3/SDL_keycode.h>
+#include <unordered_map>
+
 namespace spear
 {
 
@@ -17,7 +20,7 @@ public:
            glm::vec3 up = glm::vec3(0.f, 1.f, 0.f),
            float yaw = -90.f,
            float pitch = 0.f,
-           float movement_speed = 2.5f,
+           float movement_speed = 10.f,
            float mouse_sentitivity = 0.1f,
            float fov = 45.0f);
 
@@ -45,6 +48,24 @@ public:
     glm::vec3 getWorldUp() const
     {
         return m_worldUp;
+    }
+
+    /// \ingroup CameraGetters
+    glm::vec3 getUp() const
+    {
+        return m_up;
+    }
+
+    /// \ingroup CameraGetters
+    glm::vec3 getFront() const
+    {
+        return m_front;
+    }
+
+    /// \ingroup CameraGetters
+    glm::vec3 getRight() const
+    {
+        return m_right;
     }
 
     void moveForward(float delta_time)
