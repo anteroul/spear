@@ -1,7 +1,8 @@
+#include <spear/window.hh>
 #include <spear/camera.hh>
+#include <spear/delta_time.hh>
 #include <spear/event_handler.hh>
 #include <spear/model/obj_loader.hh>
-#include <spear/window.hh>
 
 #include <spear/sprite_3d.hh>
 
@@ -96,8 +97,8 @@ int main()
     spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
     spear::rendering::opengl::SDLTexture wallnut_texture("wallnut.jpg");
 
-    spear::rendering::opengl::OBJModel red_model("test.obj", std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
-    red_model.translate(glm::vec3(10.0f, 0.0f, 1.0f));
+    spear::rendering::opengl::OBJModel blender_model("test.obj", "test.mtl", std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(wallnut_texture)));
+    blender_model.translate(glm::vec3(10.0f, 10.0f, 1.0f));
 
     spear::rendering::opengl::Cube niilo_cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
     niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
@@ -112,21 +113,27 @@ int main()
     spear::rendering::opengl::Sphere niilo_sphere(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
     niilo_sphere.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
+    spear::DeltaTime delta_time_interface;
+
     while (true)
     {
+        float delta_time = delta_time_interface.getDeltaTime();
+
+        renderer.render();
+
         niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
         niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-        renderer.render();
 
         niilo_cube.render(camera);
         floor.render(camera);
         quad.render(camera);
         niilo_sphere.render(camera);
-        red_model.render(camera);
+        blender_model.render(camera);
 
         eventHandler.handleEvents();
         window.update(gl_api);
+
+        delta_time_interface.delay(16); // 60 fps.
     }
 }

@@ -6,16 +6,15 @@
 namespace spear::rendering::opengl
 {
 
-OBJModel::OBJModel(const std::string& object_file_path, std::shared_ptr<BaseTexture> texture)
+OBJModel::OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture)
     : Model(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material))),
       m_texture(texture)
 {
-    m_loader.load(object_file_path, "test.mtl");
+    m_loader.load(object_file_path, material_file_path);
     initialize();
     rendering::opengl::openglError("OBJModel: initialize");
 }
 
-// TODO part of this logic could happen in "Mesh"
 void OBJModel::initialize()
 {
     glGenVertexArrays(1, &m_vao);
@@ -74,16 +73,18 @@ void OBJModel::initialize()
 
 void OBJModel::render(Camera& camera)
 {
-    m_texture->bind();
+    if (m_texture)
+    {
+        m_texture->bind();
+    }
 
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Entity::Transform::getModel();
     Mesh::m_shader->use();
+    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Entity::Transform::getModel();
     m_shader->setMat4("mvp", mvp);
-
     m_shader->setSampler2D("textureSampler", 0);
 
     // Light properties (example values)
-    glm::vec3 lightPosition = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 lightPosition = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
     float lightIntensity = 1.5f;
 
@@ -107,7 +108,10 @@ void OBJModel::render(Camera& camera)
 
     // Unset, unbind
     glBindVertexArray(0);
-    m_texture->unbind();
+    if (m_texture)
+    {
+        m_texture->unbind();
+    }
     glUseProgram(0);
 }
 

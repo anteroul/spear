@@ -19,6 +19,7 @@ add_compile_definitions(SPEAR_ROOT="${SPEAR_ROOT}")
 set(SOURCES
     #src/material.cc
 
+    src/delta_time.cc
     src/window.cc
     src/transform.cc
     src/event_handler.cc

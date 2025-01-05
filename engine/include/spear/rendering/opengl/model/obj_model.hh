@@ -12,7 +12,7 @@ class OBJModel : public Model
 {
 public:
     /// Constructor.
-    OBJModel(const std::string& object_file_path, std::shared_ptr<BaseTexture> texture);
+    OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture);
 
     /// Model::initialize implementation.
     void initialize() override;
@@ -24,7 +24,6 @@ private:
     OBJLoader m_loader;
     std::shared_ptr<BaseTexture> m_texture;
 
-    // TODO this and other vao's should be stored in Mesh.
     uint32_t m_vao;
 
     std::vector<uint32_t> m_indices;

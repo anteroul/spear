@@ -1,8 +1,6 @@
 #include <spear/rendering/opengl/error.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
 
-#include <SDL3/SDL.h>
-
 #include <GL/glew.h>
 
 namespace spear::rendering::opengl
@@ -61,7 +59,6 @@ void Cube::render(Camera& camera)
     m_shader->setVec4f("color", m_color);
 
     glBindVertexArray(m_vao);
-    // Draw constant.
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // Unset, unbind
