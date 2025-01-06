@@ -36,6 +36,7 @@ set(SOURCES
     src/rendering/base_shader.cc
     src/rendering/base_texture.cc
     src/rendering/shader_type.cc
+    src/rendering/base_model.cc
 
     # Rendering Shapes
     src/rendering/shapes/shape.cc
@@ -56,7 +57,6 @@ set(SOURCES
     src/rendering/opengl/shapes/sphere.cc
 
     # Rendering OpenGL Model
-    src/rendering/opengl/model/model.cc
     src/rendering/opengl/model/obj_model.cc
 )
 
