@@ -15,6 +15,8 @@
 #include <spear/rendering/opengl/shapes/sphere.hh>
 #include <spear/rendering/opengl/texture/sdl_texture.hh>
 
+#include <spear/physics/bullet/world.hh>
+
 int main()
 {
     const std::string window_name = "Spear application";
@@ -30,7 +32,6 @@ int main()
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
     spear::rendering::opengl::Renderer renderer(window.getSDLWindow());
-
     renderer.init();
     renderer.setViewPort(w_size.x, w_size.y);
     renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
@@ -65,24 +66,29 @@ int main()
     });
     // clang-format on
 
-    // Texture creation.
-    spear::rendering::opengl::SDLTexture niilo_texture("niilo.jpg");
-    spear::rendering::opengl::SDLTexture wallnut_texture("wallnut.jpg");
+    // Bullet world.
+    spear::physics::World bullet_world;
 
-    spear::rendering::opengl::OBJModel blender_model("test.obj", "test.mtl", std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(wallnut_texture)));
+    using namespace spear::rendering::opengl;
+
+    // Texture creation.
+    SDLTexture niilo_texture("niilo.jpg");
+    SDLTexture wallnut_texture("wallnut.jpg");
+
+    OBJModel blender_model("test.obj", "test.mtl", std::make_shared<SDLTexture>(std::move(wallnut_texture)));
     blender_model.translate(glm::vec3(10.0f, 10.0f, 1.0f));
 
-    spear::rendering::opengl::Cube niilo_cube(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
+    Cube niilo_cube(std::make_shared<SDLTexture>(std::move(niilo_texture)));
     niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
 
-    spear::rendering::opengl::Cube floor(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(wallnut_texture)));
+    Cube floor(std::make_shared<SDLTexture>(std::move(wallnut_texture)));
     floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
     floor.scale(glm::vec3(1000.f, 1.0f, 1000.f));
 
-    spear::rendering::opengl::Quad quad(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
+    Quad quad(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
     quad.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
-    spear::rendering::opengl::Sphere niilo_sphere(std::make_shared<spear::rendering::opengl::SDLTexture>(std::move(niilo_texture)));
+    Sphere niilo_sphere(std::make_shared<SDLTexture>(std::move(niilo_texture)));
     niilo_sphere.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
     spear::DeltaTime delta_time_interface;

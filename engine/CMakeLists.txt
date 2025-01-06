@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.30)
 project(spear)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(Bullet REQUIRED)
 
 add_compile_options(-Wall -Wextra -pedantic -std=c++20)
 
@@ -27,6 +28,14 @@ set(SOURCES
     src/camera.cc
     src/movement_controller.cc
     src/sprite3d.cc
+
+    # Physics
+    src/physics/constants.cc
+    src/physics/base_object.cc
+
+    # Physics bullet
+    src/physics/bullet/object.cc
+    src/physics/bullet/world.cc
 
     # Model loaders
     src/model/obj_loader.cc
@@ -60,11 +69,15 @@ set(SOURCES
     src/rendering/opengl/model/obj_model.cc
 )
 
-include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+message(STATUS "Bullet include dirs: ${BULLET_INCLUDE_DIRS}")
+message(STATUS "Bullet libraries: ${BULLET_LIBRARIES}")
+
+include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
 
 add_library(spear ${SOURCES})
-target_include_directories(spear PUBLIC include)
+target_include_directories(spear PUBLIC include PUBLIC ${BULLET_INCLUDE_DIRS})
 target_link_libraries(spear
     PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
     PRIVATE OpenGL::GL GLEW::GLEW
+    PRIVATE ${BULLET_LIBRARIES}
 )
