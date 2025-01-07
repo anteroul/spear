@@ -10,6 +10,19 @@ class Transform
 {
 public:
     Transform();
+
+    /// Copy constructor.
+    Transform(const Transform& other);
+
+    /// Move constructor.
+    Transform(Transform&& other);
+
+    /// Copy assignment operator.
+    Transform& operator=(const Transform& other);
+
+    /// Move assignment operator.
+    Transform& operator=(Transform&& other);
+
     virtual void translate(const glm::vec3& position);
     virtual void rotate(float speed, const glm::vec3& direction);
     virtual void scale(const glm::vec3& scale);

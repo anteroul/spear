@@ -1,36 +1,56 @@
 #include <spear/physics/bullet/object.hh>
 #include <spear/physics/constants.hh>
 
-namespace spear::physics
+#include <iostream>
+
+namespace spear::physics::bullet
 {
 
-Object::Object(float mass, btDiscreteDynamicsWorld* world, const btVector3& position, const btVector3& size)
-    : BaseObject(mass),
-      m_dynamicsWorld(world),
-      m_collisionShape(std::make_unique<btBoxShape>(size))
+Object::Object(ObjectData&& object_data)
+    : BaseObject(object_data.getMass()),
+      m_dynamicsWorld(object_data.getWorld()),
+      m_collisionShape(std::make_unique<btBoxShape>(object_data.getSizeAsBulletVec3()))
 {
     btTransform transform;
     transform.setIdentity();
-    transform.setOrigin(position);
+    transform.setOrigin(object_data.getPositionAsBulletVec3());
 
     // Calculate the local inertia
     btVector3 localInertia(0, 0, 0);
-    if (mass != 0.0f)
+    if (object_data.getMass() != 0.0f)
     {
-        m_collisionShape->calculateLocalInertia(mass, localInertia);
+        m_collisionShape->calculateLocalInertia(object_data.getMass(), localInertia);
     }
 
     // Create the motion state
     m_motionState = std::make_unique<btDefaultMotionState>(transform);
 
-    // Create the rigid body construction info
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, m_motionState.get(), m_collisionShape.get(), localInertia);
-
-    // Create the rigid body
+    // Rigid body.
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(object_data.getMass(), m_motionState.get(), m_collisionShape.get(), localInertia);
     m_rigidBody = std::make_unique<btRigidBody>(rbInfo);
-
-    // Add the rigid body to the world
     m_dynamicsWorld->addRigidBody(m_rigidBody.get());
+}
+
+Object::Object(Object&& other)
+    : BaseObject(std::move(other)),
+      m_dynamicsWorld(std::move(other.m_dynamicsWorld)),
+      m_collisionShape(std::move(other.m_collisionShape)),
+      m_motionState(std::move(other.m_motionState)),
+      m_rigidBody(std::move(other.m_rigidBody))
+{
+}
+
+Object& Object::operator=(Object&& other)
+{
+    if (this != &other)
+    {
+        BaseObject::operator=(std::move(other)),
+        m_dynamicsWorld = std::move(other.m_dynamicsWorld);
+        m_collisionShape = std::move(other.m_collisionShape);
+        m_motionState = std::move(other.m_motionState);
+        m_rigidBody = std::move(other.m_rigidBody);
+    }
+    return *this;
 }
 
 Object::~Object()
@@ -54,7 +74,7 @@ void Object::applyGravity()
     if (m_rigidBody && !m_rigidBody->isStaticObject())
     {
         auto gravity = Constants::getGravity();
-        btVector3 currentGravity = m_mass * btVector3(gravity.x, gravity.y, gravity.z);
+        btVector3 currentGravity = btVector3(gravity.x, gravity.y, gravity.z);
         m_rigidBody->applyCentralForce(currentGravity);
     }
 }
@@ -66,4 +86,4 @@ btVector3 Object::getPosition() const
     return transform.getOrigin();
 }
 
-} // namespace spear::physics
+} // namespace spear::physics::bullet

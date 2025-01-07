@@ -1,3 +1,4 @@
+#include "spear/physics/bullet/object_data.hh"
 #include <spear/rendering/opengl/error.hh>
 #include <spear/rendering/opengl/model/obj_model.hh>
 
@@ -6,8 +7,8 @@
 namespace spear::rendering::opengl
 {
 
-OBJModel::OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture)
-    : BaseModel(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material))),
+OBJModel::OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture, physics::bullet::ObjectData&& object_data)
+    : BaseModel(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material)), std::move(object_data)),
       m_texture(texture)
 {
     m_loader.load(object_file_path, material_file_path);
@@ -79,7 +80,7 @@ void OBJModel::render(Camera& camera)
     }
 
     Mesh::m_shader->use();
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Entity::Transform::getModel();
+    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * GameObject::Transform::getModel();
 
     m_shader->setMat4("mvp", mvp);
     m_shader->setSampler2D("textureSampler", 0);

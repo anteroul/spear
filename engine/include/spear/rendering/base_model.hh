@@ -1,18 +1,20 @@
 #ifndef SPEAR_RENDERING_OPENGL_BASE_MODEL_HH
 #define SPEAR_RENDERING_OPENGL_BASE_MODEL_HH
 
-#include <spear/entity.hh>
+#include <spear/game_object.hh>
 #include <spear/mesh.hh>
 #include <spear/rendering/base_shader.hh>
+
+#include <spear/physics/bullet/object_data.hh>
 
 namespace spear::rendering
 {
 
-class BaseModel : public Mesh, public Entity
+class BaseModel : public Mesh, public GameObject
 {
 public:
     /// Constructor.
-    BaseModel(std::shared_ptr<rendering::BaseShader> shader);
+    BaseModel(std::shared_ptr<rendering::BaseShader> shader, physics::bullet::ObjectData&& object_data);
 
     virtual void initialize() = 0;
 };

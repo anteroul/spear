@@ -121,7 +121,7 @@ void Sphere::render(Camera& camera)
 {
     m_texture->bind();
 
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Shape::Entity::Transform::getModel();
+    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Shape::Transform::getModel();
     Shape::Mesh::m_shader->use();
 
     m_shader->setMat4("mvp", mvp);

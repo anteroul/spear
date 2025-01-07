@@ -67,19 +67,22 @@ int main()
     // clang-format on
 
     // Bullet world.
-    spear::physics::World bullet_world;
+    spear::physics::bullet::World bullet_world;
 
     using namespace spear::rendering::opengl;
+    using namespace spear::physics::bullet;
 
     // Texture creation.
     SDLTexture niilo_texture("niilo.jpg");
     SDLTexture wallnut_texture("wallnut.jpg");
 
-    OBJModel blender_model("test.obj", "test.mtl", std::make_shared<SDLTexture>(std::move(wallnut_texture)));
+    auto blender_model_data = ObjectData(std::make_shared<btDiscreteDynamicsWorld>(*bullet_world.getDynamicsWorld()), 1.0f, glm::vec3(1.0f, 10.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    OBJModel blender_model("test.obj", "test.mtl", std::make_shared<SDLTexture>(std::move(wallnut_texture)), std::move(blender_model_data));
+
     blender_model.translate(glm::vec3(10.0f, 10.0f, 1.0f));
 
-    Cube niilo_cube(std::make_shared<SDLTexture>(std::move(niilo_texture)));
-    niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
+    // Cube niilo_cube(std::make_shared<SDLTexture>(std::move(niilo_texture)));
+    // niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
 
     Cube floor(std::make_shared<SDLTexture>(std::move(wallnut_texture)));
     floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
@@ -99,18 +102,23 @@ int main()
     {
         float delta_time = delta_time_interface.getDeltaTime();
 
-        niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
+        blender_model.applyGravity();
+        blender_model.updateGameObject();
+
+        // niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
         niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // Rendering.
         renderer.render();
 
-        niilo_cube.render(camera);
+        // niilo_cube.render(camera);
         floor.render(camera);
         quad.render(camera);
         niilo_sphere.render(camera);
         blender_model.render(camera);
+
+        bullet_world.stepSimulation(1.0f / 60.f);
 
         // Event handling.
         eventHandler.handleEvents(movement_controller, delta_time);

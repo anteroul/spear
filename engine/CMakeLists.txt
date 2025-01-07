@@ -24,16 +24,18 @@ set(SOURCES
     src/window.cc
     src/transform.cc
     src/event_handler.cc
-    src/mesh.cc
+    src/game_object.cc
     src/camera.cc
     src/movement_controller.cc
     src/sprite3d.cc
+    src/mesh.cc
 
     # Physics
     src/physics/constants.cc
     src/physics/base_object.cc
 
     # Physics bullet
+    src/physics/bullet/object_data.cc
     src/physics/bullet/object.cc
     src/physics/bullet/world.cc
 

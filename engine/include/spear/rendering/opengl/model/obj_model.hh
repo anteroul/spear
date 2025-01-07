@@ -5,6 +5,8 @@
 #include <spear/rendering/base_model.hh>
 #include <spear/rendering/base_texture.hh>
 
+#include <spear/physics/bullet/object_data.hh>
+
 namespace spear::rendering::opengl
 {
 
@@ -12,7 +14,7 @@ class OBJModel : public BaseModel
 {
 public:
     /// Constructor.
-    OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture);
+    OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture, physics::bullet::ObjectData&& object_data);
 
     /// Model::initialize implementation.
     void initialize() override;

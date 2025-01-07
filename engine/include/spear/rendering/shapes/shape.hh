@@ -1,13 +1,13 @@
 #ifndef SPEAR_SHAPE_SHAPE_HH
 #define SPEAR_SHAPE_SHAPE_HH
 
-#include <spear/entity.hh>
 #include <spear/mesh.hh>
+#include <spear/transform.hh>
 
 namespace spear::rendering
 {
 
-class Shape : public Mesh, public Entity
+class Shape : public Mesh, public Transform
 {
 public:
     Shape(std::shared_ptr<rendering::BaseShader> shader, const glm::vec4& color);

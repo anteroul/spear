@@ -8,6 +8,34 @@ Transform::Transform()
 {
 }
 
+Transform::Transform(const Transform& other)
+    : m_model(other.m_model)
+{
+}
+
+Transform::Transform(Transform&& other)
+    : m_model(std::move(other.m_model))
+{
+}
+
+Transform& Transform::operator=(const Transform& other)
+{
+    if (this != &other)
+    {
+        m_model = other.m_model;
+    }
+    return *this;
+}
+
+Transform& Transform::operator=(Transform&& other)
+{
+    if (this != &other)
+    {
+        m_model = std::move(other.m_model);
+    }
+    return *this;
+}
+
 void Transform::translate(const glm::vec3& position)
 {
     m_model = glm::translate(m_model, position);

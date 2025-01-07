@@ -1,6 +1,6 @@
 #include <spear/physics/bullet/world.hh>
 
-namespace spear::physics
+namespace spear::physics::bullet
 {
 
 World::World(glm::vec3 gravity)
@@ -16,9 +16,4 @@ World::World(glm::vec3 gravity)
     m_dynamicsWorld->setGravity(bullet_gravity);
 }
 
-std::unique_ptr<Object> World::createObject(float mass, const btVector3& position, const btVector3& size)
-{
-    return std::make_unique<Object>(mass, m_dynamicsWorld.get(), position, size);
-}
-
-} // namespace spear::physics
+} // namespace spear::physics::bullet

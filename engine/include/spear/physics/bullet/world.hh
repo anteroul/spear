@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace spear::physics
+namespace spear::physics::bullet
 {
 
 class World
@@ -28,8 +28,6 @@ public:
         return m_dynamicsWorld.get();
     }
 
-    std::unique_ptr<Object> createObject(float mass, const btVector3& position, const btVector3& size);
-
 private:
     std::unique_ptr<btDefaultCollisionConfiguration> m_collisionConfig;
     std::unique_ptr<btCollisionDispatcher> m_dispatcher;
@@ -38,6 +36,6 @@ private:
     std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
 };
 
-} // namespace spear::physics
+} // namespace spear::physics::bullet
 
 #endif
