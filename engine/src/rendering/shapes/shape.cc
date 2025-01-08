@@ -3,8 +3,9 @@
 namespace spear::rendering
 {
 
-Shape::Shape(std::shared_ptr<rendering::BaseShader> shader, const glm::vec4& color)
+Shape::Shape(std::shared_ptr<rendering::BaseShader> shader, physics::bullet::ObjectData&& object_data, const glm::vec4& color)
     : Mesh(std::move(shader)),
+      GameObject(std::move(object_data)),
       m_color(color)
 {
 }

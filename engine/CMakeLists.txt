@@ -27,7 +27,7 @@ set(SOURCES
     src/game_object.cc
     src/camera.cc
     src/movement_controller.cc
-    src/sprite3d.cc
+    #src/sprite3d.cc
     src/mesh.cc
 
     # Physics

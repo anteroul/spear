@@ -5,11 +5,11 @@
 namespace spear::rendering::opengl
 {
 
-Quad::Quad(const glm::vec4& color)
-    : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::quad)), color),
+Quad::Quad(physics::bullet::ObjectData&& object_data, const glm::vec4& color)
+    : Shape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::quad)), std::move(object_data), color),
       m_vao(0), m_vbo(0), m_ebo(0)
 {
-    initialize(glm::vec3(1.0f, 1.0f, 1.0f));
+    initialize(object_data.getPosition());
 }
 
 Quad::~Quad()

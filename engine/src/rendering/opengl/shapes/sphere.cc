@@ -1,3 +1,4 @@
+#include "spear/physics/bullet/object_data.hh"
 #include <GL/glew.h>
 #include <cmath>
 #include <spear/rendering/opengl/shapes/sphere.hh>
@@ -5,12 +6,10 @@
 namespace spear::rendering::opengl
 {
 
-Sphere::Sphere(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color, int latitudeBands, int longitudeBands)
-    : TexturedShape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, color)
+Sphere::Sphere(std::shared_ptr<rendering::BaseTexture> texture, physics::bullet::ObjectData&& object_data, const glm::vec4& color, int latitudeBands, int longitudeBands)
+    : TexturedShape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, std::move(object_data), color)
 {
-    const glm::vec3 position = glm::vec3(1.f, 1.f, 1.f);
-
-    auto vertex_buffer_data = createVertexBufferData(latitudeBands, longitudeBands, position);
+    auto vertex_buffer_data = createVertexBufferData(latitudeBands, longitudeBands, object_data.getPosition());
     auto uv_data = createUvData(latitudeBands, longitudeBands);
     auto indices = createIndexBufferData(latitudeBands, longitudeBands);
 

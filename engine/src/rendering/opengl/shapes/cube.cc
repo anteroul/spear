@@ -6,11 +6,10 @@
 namespace spear::rendering::opengl
 {
 
-Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color)
-    : TexturedShape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, color)
+Cube::Cube(std::shared_ptr<rendering::BaseTexture> texture, physics::bullet::ObjectData&& object_data, const glm::vec4& color)
+    : TexturedShape(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::cube)), texture, std::move(object_data), color)
 {
-    const glm::vec3 position = glm::vec3(1.0f, 1.0f, 1.0f);
-    create(createVertexBufferData(position), createUvData());
+    create(createVertexBufferData(object_data.getPosition()), createUvData());
 }
 
 void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& uv_data)

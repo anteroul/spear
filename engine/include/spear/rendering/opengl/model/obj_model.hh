@@ -48,7 +48,7 @@ private:
 
     glm::vec3 m_lightPosition = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 m_lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float m_lightIntensity = 1.0f;
+    float m_lightIntensity = 1.5f;
 };
 
 } // namespace spear::rendering::opengl

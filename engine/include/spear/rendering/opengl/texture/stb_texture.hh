@@ -9,7 +9,7 @@
 namespace spear::rendering::opengl
 {
 
-class STBTexture : public Texture
+class STBTexture : public Texture, public std::enable_shared_from_this<STBTexture>
 {
 public:
     STBTexture(const std::string& path, bool asset_path = true);

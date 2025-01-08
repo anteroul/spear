@@ -4,6 +4,8 @@
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/shapes/shape.hh>
 
+#include <spear/physics/bullet/object_data.hh>
+
 #include <vector>
 
 namespace spear::rendering::opengl
@@ -13,7 +15,7 @@ class Quad : public Shape
 {
 public:
     /// Constructor.
-    Quad(const glm::vec4& color = glm::vec4(1.f, 1.f, 1.f, 1.f));
+    Quad(physics::bullet::ObjectData&& object_data, const glm::vec4& color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
     /// Destructor.
     ~Quad();

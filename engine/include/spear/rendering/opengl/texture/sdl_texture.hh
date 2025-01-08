@@ -7,7 +7,7 @@
 namespace spear::rendering::opengl
 {
 
-class SDLTexture : public Texture
+class SDLTexture : public Texture, public std::enable_shared_from_this<SDLTexture>
 {
 public:
     /// Constructor.

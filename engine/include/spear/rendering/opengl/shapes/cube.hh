@@ -15,7 +15,7 @@ public:
     /// Constructor.
     /// \param texture The texture used in the cube.
     /// \param color The color of the sides of the cube.
-    Cube(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    Cube(std::shared_ptr<rendering::BaseTexture> texture, physics::bullet::ObjectData&& object_data, const glm::vec4& color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
     // Mesh::render implementation.
     void render(Camera& camera) override;

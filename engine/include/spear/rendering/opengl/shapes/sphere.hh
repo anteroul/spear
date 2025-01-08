@@ -2,6 +2,7 @@
 #define SPEAR_RENDERING_OPENGL_SHAPES_SPHERE_HH
 
 #include <spear/rendering/shapes/textured_shape.hh>
+#include <spear/physics/bullet/object_data.hh>
 
 #include <vector>
 
@@ -12,7 +13,7 @@ class Sphere : public TexturedShape
 {
 public:
     /// Constructor.
-    Sphere(std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+    Sphere(std::shared_ptr<rendering::BaseTexture> texture, physics::bullet::ObjectData&& object_data, const glm::vec4& color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
            int latitudeBands = 20, int longitudeBands = 20);
 
     /// Mesh::render implementation.

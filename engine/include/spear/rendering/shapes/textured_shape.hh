@@ -10,7 +10,7 @@ class TexturedShape : public Shape
 {
 public:
     /// Constructor.
-    TexturedShape(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture, const glm::vec4& color);
+    TexturedShape(std::shared_ptr<rendering::BaseShader> shader, std::shared_ptr<rendering::BaseTexture> texture, physics::bullet::ObjectData&& object_data, const glm::vec4& color);
 
 protected:
     std::shared_ptr<rendering::BaseTexture> m_texture;

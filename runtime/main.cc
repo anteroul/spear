@@ -5,17 +5,20 @@
 #include <spear/movement_controller.hh>
 #include <spear/window.hh>
 
-#include <spear/sprite_3d.hh>
-
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
 #include <spear/rendering/opengl/shapes/quad.hh>
 #include <spear/rendering/opengl/shapes/sphere.hh>
-#include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 #include <spear/physics/bullet/world.hh>
+
+#include <iostream>
+
+// TODO
+// #include <spear/sprite_3d.hh>
 
 int main()
 {
@@ -62,37 +65,40 @@ int main()
         std::cout << "Window resized!" << std::endl;
         window.resize();
         auto w_size = window.getSize();
-        renderer.setViewPort(w_size.x, w_size.y); 
+        renderer.setViewPort(w_size.x, w_size.y);
     });
     // clang-format on
 
     // Bullet world.
     spear::physics::bullet::World bullet_world;
+    auto shared_bullet_world = std::make_shared<btDiscreteDynamicsWorld>(*bullet_world.getDynamicsWorld());
 
     using namespace spear::rendering::opengl;
     using namespace spear::physics::bullet;
 
     // Texture creation.
-    SDLTexture niilo_texture("niilo.jpg");
-    SDLTexture wallnut_texture("wallnut.jpg");
+    auto niilo_texture = std::make_shared<SDLTexture>("niilo.jpg");
+    auto wallnut_texture = std::make_shared<SDLTexture>("wallnut.jpg");
 
-    auto blender_model_data = ObjectData(std::make_shared<btDiscreteDynamicsWorld>(*bullet_world.getDynamicsWorld()), 1.0f, glm::vec3(1.0f, 10.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    OBJModel blender_model("test.obj", "test.mtl", std::make_shared<SDLTexture>(std::move(wallnut_texture)), std::move(blender_model_data));
+    auto blender_model_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    OBJModel blender_model("test.obj", "test.mtl", wallnut_texture, std::move(blender_model_data));
 
-    blender_model.translate(glm::vec3(10.0f, 10.0f, 1.0f));
+    auto niilo_cube_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.f, 5.f, 5.f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Cube niilo_cube(niilo_texture, std::move(niilo_cube_data));
+    niilo_cube.scale(glm::vec3(0.1f, 0.1f, 0.1f));
 
-    // Cube niilo_cube(std::make_shared<SDLTexture>(std::move(niilo_texture)));
-    // niilo_cube.translate(glm::vec3(1.0f, 1.0f, 1.0f));
+    auto floor_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Cube floor(wallnut_texture, std::move(floor_data));
 
-    Cube floor(std::make_shared<SDLTexture>(std::move(wallnut_texture)));
     floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
     floor.scale(glm::vec3(1000.f, 1.0f, 1000.f));
 
-    Quad quad(glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
+    auto quad_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(2.0f, 8.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Quad quad(std::move(quad_data), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
     quad.translate(glm::vec3(5.0f, 1.0f, 1.0f));
 
-    Sphere niilo_sphere(std::make_shared<SDLTexture>(std::move(niilo_texture)));
-    niilo_sphere.translate(glm::vec3(5.0f, 1.0f, 1.0f));
+    auto niilo_sphere_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(3.31f, 3.f, -4.f), glm::vec3(1.0f, 1.0f, 1.0f));
+    Sphere niilo_sphere(niilo_texture, std::move(niilo_sphere_data));
 
     spear::DeltaTime delta_time_interface;
     std::unordered_map<SDL_Keycode, bool> keyStates = {
@@ -102,17 +108,23 @@ int main()
     {
         float delta_time = delta_time_interface.getDeltaTime();
 
-        blender_model.applyGravity();
-        blender_model.updateGameObject();
+        //blender_model.applyGravity();
+        //blender_model.updateGameObject(delta_time);
 
-        // niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
+        niilo_cube.applyGravity();
+        niilo_cube.updateGameObject(delta_time);
+
+        //niilo_sphere.applyGravity();
+        //niilo_sphere.updateGameObject(delta_time);
+
+        niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
         niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // Rendering.
         renderer.render();
 
-        // niilo_cube.render(camera);
+        niilo_cube.render(camera);
         floor.render(camera);
         quad.render(camera);
         niilo_sphere.render(camera);

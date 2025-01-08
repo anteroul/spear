@@ -27,7 +27,7 @@ public:
     /// Deleted copy assignment operator.
     GameObject& operator=(const GameObject&) = delete;
 
-    void updateGameObject();
+    void updateGameObject(float delta_time);
 };
 
 } // namespace spear

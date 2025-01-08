@@ -1,16 +1,16 @@
 #ifndef SPEAR_SHAPE_SHAPE_HH
 #define SPEAR_SHAPE_SHAPE_HH
 
+#include <spear/game_object.hh>
 #include <spear/mesh.hh>
-#include <spear/transform.hh>
 
 namespace spear::rendering
 {
 
-class Shape : public Mesh, public Transform
+class Shape : public Mesh, public GameObject
 {
 public:
-    Shape(std::shared_ptr<rendering::BaseShader> shader, const glm::vec4& color);
+    Shape(std::shared_ptr<rendering::BaseShader> shader, physics::bullet::ObjectData&& object_data, const glm::vec4& color);
 
 protected:
     glm::vec4 m_color;
