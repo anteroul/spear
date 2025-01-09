@@ -13,6 +13,36 @@ namespace spear::rendering::opengl
 class OBJModel : public BaseModel
 {
 public:
+    class Light
+    {
+    public:
+        /// Constructor.
+        Light(float light_intensity, glm::vec3 light_position, glm::vec3 light_color);
+
+        // Default constructor.
+        Light() = default;
+
+        float getLightIntensity() const
+        {
+            return m_lightIntensity;
+        }
+
+        glm::vec3 getLightPosition() const
+        {
+            return m_lightPosition;
+        }
+
+        glm::vec3 getLightColor() const
+        {
+            return m_lightColor;
+        }
+
+    private:
+        float m_lightIntensity = 1.5f;
+        glm::vec3 m_lightPosition = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 m_lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    };
+
     /// Constructor.
     OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture, physics::bullet::ObjectData&& object_data);
 
@@ -21,21 +51,6 @@ public:
 
     /// Mesh::render implementation.
     void render(Camera& camera) override;
-
-    void setLightPosition(glm::vec3 light_position)
-    {
-        m_lightPosition = light_position;
-    }
-
-    void setLightColor(glm::vec3 light_color)
-    {
-        m_lightColor = light_color;
-    }
-
-    void setLightIntensity(float light_intensity)
-    {
-        m_lightIntensity = light_intensity;
-    }
 
 private:
     OBJLoader m_loader;
@@ -46,9 +61,7 @@ private:
     std::vector<uint32_t> m_indices;
     ModelLoader::Material m_material;
 
-    glm::vec3 m_lightPosition = glm::vec3(1.0f, 1.0f, 1.0f);
-    glm::vec3 m_lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    float m_lightIntensity = 1.5f;
+    Light m_light;
 };
 
 } // namespace spear::rendering::opengl

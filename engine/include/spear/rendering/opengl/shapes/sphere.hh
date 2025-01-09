@@ -1,8 +1,8 @@
 #ifndef SPEAR_RENDERING_OPENGL_SHAPES_SPHERE_HH
 #define SPEAR_RENDERING_OPENGL_SHAPES_SPHERE_HH
 
-#include <spear/rendering/shapes/textured_shape.hh>
 #include <spear/physics/bullet/object_data.hh>
+#include <spear/rendering/shapes/textured_shape.hh>
 
 #include <vector>
 

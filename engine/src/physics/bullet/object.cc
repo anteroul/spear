@@ -1,3 +1,4 @@
+#include "spear/transform.hh"
 #include <spear/physics/bullet/object.hh>
 #include <spear/physics/constants.hh>
 
@@ -29,7 +30,6 @@ Object::Object(ObjectData&& object_data)
     btRigidBody::btRigidBodyConstructionInfo rbInfo(object_data.getMass(), m_motionState.get(), m_collisionShape.get(), localInertia);
     m_rigidBody = std::make_unique<btRigidBody>(rbInfo);
     m_dynamicsWorld->addRigidBody(m_rigidBody.get());
-    m_dynamicsWorld->setGravity(btVector3(0.0f, -9.81f, 0.0f));
 }
 
 Object::Object(Object&& other)
@@ -74,9 +74,12 @@ void Object::applyGravity()
 {
     if (m_rigidBody && !m_rigidBody->isStaticObject())
     {
-        //auto gravity = Constants::getGravity();
-        //btVector3 currentGravity = btVector3(gravity.x, gravity.y, gravity.z);
-        //m_rigidBody->applyCentralForce(currentGravity);
+        auto gravity = Constants::getGravity();
+        btVector3 currentGravity = btVector3(gravity.x, gravity.y, gravity.z);
+        m_rigidBody->applyCentralForce(currentGravity);
+
+        btVector3 position = getPosition();
+        Transform::translate(glm::vec3(position.x(), position.y(), position.z()));
     }
 }
 

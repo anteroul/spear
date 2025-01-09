@@ -1,11 +1,13 @@
 #ifndef SPEAR_PHYSICS_BASE_OBJECT_HH
 #define SPEAR_PHYSICS_BASE_OBJECT_HH
 
+#include <spear/transform.hh>
+
 namespace spear::physics
 {
 
 /// Adds physics.
-class BaseObject
+class BaseObject : public Transform
 {
 public:
     // Constructor.

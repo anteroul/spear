@@ -9,9 +9,9 @@
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
-#include <spear/rendering/opengl/texture/sdl_texture.hh>
 #include <spear/rendering/opengl/shapes/quad.hh>
 #include <spear/rendering/opengl/shapes/sphere.hh>
+#include <spear/rendering/opengl/texture/sdl_texture.hh>
 
 #include <spear/physics/bullet/world.hh>
 
@@ -83,7 +83,7 @@ int main()
     auto blender_model_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
     OBJModel blender_model("test.obj", "test.mtl", wallnut_texture, std::move(blender_model_data));
 
-    auto niilo_cube_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.f, 5.f, 5.f), glm::vec3(1.0f, 1.0f, 1.0f));
+    auto niilo_cube_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(3.f, 5.f, 3.f), glm::vec3(1.0f, 1.0f, 1.0f));
     Cube niilo_cube(niilo_texture, std::move(niilo_cube_data));
     niilo_cube.scale(glm::vec3(0.1f, 0.1f, 0.1f));
 
@@ -108,14 +108,17 @@ int main()
     {
         float delta_time = delta_time_interface.getDeltaTime();
 
-        //blender_model.applyGravity();
-        //blender_model.updateGameObject(delta_time);
+        // blender_model.applyGravity();
+        // blender_model.updateGameObject(delta_time);
 
-        niilo_cube.applyGravity();
-        niilo_cube.updateGameObject(delta_time);
+        // niilo_cube.applyGravity();
+        // niilo_cube.updateGameObject(delta_time);
 
-        //niilo_sphere.applyGravity();
-        //niilo_sphere.updateGameObject(delta_time);
+        // quad.applyGravity();
+        // quad.updateGameObject(delta_time);
+
+        // niilo_sphere.applyGravity();
+        // niilo_sphere.updateGameObject(delta_time);
 
         niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
         quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));

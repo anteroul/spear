@@ -7,6 +7,13 @@
 namespace spear::rendering::opengl
 {
 
+OBJModel::Light::Light(float light_intensity, glm::vec3 light_position, glm::vec3 light_color)
+    : m_lightIntensity(light_intensity),
+      m_lightPosition(light_position),
+      m_lightColor(light_color)
+{
+}
+
 OBJModel::OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture, physics::bullet::ObjectData&& object_data)
     : BaseModel(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material)), std::move(object_data)),
       m_texture(texture)
@@ -85,9 +92,9 @@ void OBJModel::render(Camera& camera)
     m_shader->setMat4("mvp", mvp);
     m_shader->setSampler2D("textureSampler", 0);
 
-    m_shader->setVec3f("light.position", m_lightPosition);
-    m_shader->setVec3f("light.color", m_lightColor);
-    m_shader->setFloat("light.intensity", m_lightIntensity);
+    m_shader->setVec3f("light.position", m_light.getLightPosition());
+    m_shader->setVec3f("light.color", m_light.getLightColor());
+    m_shader->setFloat("light.intensity", m_light.getLightIntensity());
 
     glm::vec3 cameraPosition = camera.getPosition();
     m_shader->setVec3f("cameraPosition", cameraPosition);

@@ -9,7 +9,7 @@
 namespace spear
 {
 
-class GameObject : public Transform, public physics::bullet::Object
+class GameObject : public physics::bullet::Object
 {
 public:
     /// Constructor.
