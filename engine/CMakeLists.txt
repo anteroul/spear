@@ -19,6 +19,7 @@ add_compile_definitions(SPEAR_ROOT="${SPEAR_ROOT}")
 
 set(SOURCES
     #src/material.cc
+    #src/sprite3d.cc
 
     src/delta_time.cc
     src/window.cc
@@ -27,7 +28,8 @@ set(SOURCES
     src/game_object.cc
     src/camera.cc
     src/movement_controller.cc
-    #src/sprite3d.cc
+    src/scene_manager.cc
+    src/scene.cc
     src/mesh.cc
 
     # Physics

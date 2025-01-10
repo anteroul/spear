@@ -2,7 +2,6 @@
 #define SPEAR_RENDERING_OPENGL_BASE_MODEL_HH
 
 #include <spear/game_object.hh>
-#include <spear/mesh.hh>
 #include <spear/rendering/base_shader.hh>
 
 #include <spear/physics/bullet/object_data.hh>
@@ -10,7 +9,7 @@
 namespace spear::rendering
 {
 
-class BaseModel : public Mesh, public GameObject
+class BaseModel : public GameObject
 {
 public:
     /// Constructor.

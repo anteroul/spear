@@ -3,8 +3,10 @@
 #include <spear/event_handler.hh>
 #include <spear/model/obj_loader.hh>
 #include <spear/movement_controller.hh>
+#include <spear/scene_manager.hh>
 #include <spear/window.hh>
 
+#include <spear/game_object.hh>
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
@@ -80,58 +82,35 @@ int main()
     auto niilo_texture = std::make_shared<SDLTexture>("niilo.jpg");
     auto wallnut_texture = std::make_shared<SDLTexture>("wallnut.jpg");
 
-    auto blender_model_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    OBJModel blender_model("test.obj", "test.mtl", wallnut_texture, std::move(blender_model_data));
+    spear::SceneManager scene_manager;
+    spear::Scene example_scene;
 
-    auto niilo_cube_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(3.f, 5.f, 3.f), glm::vec3(1.0f, 1.0f, 1.0f));
-    Cube niilo_cube(niilo_texture, std::move(niilo_cube_data));
-    niilo_cube.scale(glm::vec3(0.1f, 0.1f, 0.1f));
+    auto example_scene_container = spear::Scene::Container{
+            std::make_shared<Cube>(wallnut_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+            std::make_shared<OBJModel>("test.obj", "test.mtl", wallnut_texture,
+                                       ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+            Cube::create(niilo_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, 13.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
+            std::make_shared<Quad>(ObjectData(shared_bullet_world, 1.0f, glm::vec3(2.0f, 8.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f)), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)),
+            std::make_shared<Sphere>(niilo_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(4.0f, 3.f, -4.f), glm::vec3(1.0f, 1.0f, 1.0f)))};
 
-    auto floor_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    Cube floor(wallnut_texture, std::move(floor_data));
-
-    floor.translate(glm::vec3(0.0f, -4.0f, 0.0f));
-    floor.scale(glm::vec3(1000.f, 1.0f, 1000.f));
-
-    auto quad_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(2.0f, 8.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-    Quad quad(std::move(quad_data), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f));
-    quad.translate(glm::vec3(5.0f, 1.0f, 1.0f));
-
-    auto niilo_sphere_data = ObjectData(shared_bullet_world, 1.0f, glm::vec3(3.31f, 3.f, -4.f), glm::vec3(1.0f, 1.0f, 1.0f));
-    Sphere niilo_sphere(niilo_texture, std::move(niilo_sphere_data));
+    example_scene_container[0]->translate(glm::vec3(0.0f, -4.0f, 0.0f));
+    example_scene_container[0]->scale(glm::vec3(1000.0f, 1.0f, 1000.0f));
+    example_scene.setObjects(std::move(example_scene_container));
 
     spear::DeltaTime delta_time_interface;
     std::unordered_map<SDL_Keycode, bool> keyStates = {
             {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
 
+    scene_manager.addScene(std::move(example_scene));
+    auto current_scene = scene_manager.getCurrentScene();
     while (true)
     {
         float delta_time = delta_time_interface.getDeltaTime();
 
-        // blender_model.applyGravity();
-        // blender_model.updateGameObject(delta_time);
-
-        // niilo_cube.applyGravity();
-        // niilo_cube.updateGameObject(delta_time);
-
-        // quad.applyGravity();
-        // quad.updateGameObject(delta_time);
-
-        // niilo_sphere.applyGravity();
-        // niilo_sphere.updateGameObject(delta_time);
-
-        niilo_cube.rotate(0.01f, glm::vec3(1.0f, 1.0f, 1.0f));
-        quad.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
-        niilo_sphere.rotate(0.01f, glm::vec3(0.0f, 1.0f, 0.0f));
-
         // Rendering.
         renderer.render();
 
-        niilo_cube.render(camera);
-        floor.render(camera);
-        quad.render(camera);
-        niilo_sphere.render(camera);
-        blender_model.render(camera);
+        current_scene.update(camera);
 
         bullet_world.stepSimulation(1.0f / 60.f);
 

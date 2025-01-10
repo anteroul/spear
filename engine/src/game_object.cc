@@ -1,17 +1,30 @@
 #include <spear/game_object.hh>
 
 #include <iostream>
+#include <random>
 
 namespace spear
 {
 
-GameObject::GameObject(physics::bullet::ObjectData&& object_data)
-    : physics::bullet::Object(std::move(object_data))
+uint64_t generateRandomUint64()
+{
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
+    return dist(gen);
+}
+
+GameObject::GameObject(physics::bullet::ObjectData&& object_data, std::shared_ptr<rendering::BaseShader> shader)
+    : physics::bullet::Object(std::move(object_data)),
+      Mesh(shader),
+      m_id(generateRandomUint64())
 {
 }
 
 GameObject::GameObject(GameObject&& other)
-    : physics::bullet::Object(std::move(other))
+    : physics::bullet::Object(std::move(other)),
+      Mesh(std::move(other)),
+      m_id(std::move(other.m_id))
 {
 }
 
@@ -20,6 +33,8 @@ GameObject& GameObject::operator=(GameObject&& other)
     if (this != &other)
     {
         physics::bullet::Object::operator=(std::move(other));
+        Mesh::operator=(std::move(other));
+        m_id = std::move(other.m_id);
     }
     return *this;
 }
