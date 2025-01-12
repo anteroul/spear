@@ -1,23 +1,14 @@
-#include <spear/game_object.hh>
-
 #include <iostream>
-#include <random>
+#include <spear/game_object.hh>
+#include <spear/util.hh>
 
 namespace spear
 {
 
-uint64_t generateRandomUint64()
-{
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
-    return dist(gen);
-}
-
 GameObject::GameObject(physics::bullet::ObjectData&& object_data, std::shared_ptr<rendering::BaseShader> shader)
     : physics::bullet::Object(std::move(object_data)),
       Mesh(shader),
-      m_id(generateRandomUint64())
+      m_id(Util::generateRandomUint64())
 {
 }
 

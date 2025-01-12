@@ -9,7 +9,10 @@
 namespace spear
 {
 
-class GameObject : public physics::bullet::Object, public Mesh
+class GameObject
+    : public physics::bullet::Object,
+      public Mesh,
+      public std::enable_shared_from_this<GameObject>
 {
 public:
     /// Constructor.

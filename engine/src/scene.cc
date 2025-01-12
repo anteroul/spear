@@ -1,8 +1,40 @@
-#include <algorithm>
 #include <spear/scene.hh>
+#include <spear/util.hh>
+
+#include <algorithm>
 
 namespace spear
 {
+
+Scene::Scene()
+    : m_name(Util::generateRandomString(10)),
+      m_id(Util::generateRandomUint64())
+{
+}
+
+Scene::Scene(const std::string& name)
+    : m_name(name),
+      m_id(Util::generateRandomUint64())
+{
+}
+
+Scene::Scene(Scene&& other) noexcept
+    : m_name(std::move(other.m_name)),
+      m_id(std::move(other.m_id)),
+      m_gameObjects(std::move(other.m_gameObjects))
+{
+}
+
+Scene& Scene::operator=(Scene&& other) noexcept
+{
+    if (this != &other)
+    {
+        m_name = std::move(other.m_name);
+        m_id = std::move(other.m_id);
+        m_gameObjects = std::move(other.m_gameObjects);
+    }
+    return *this;
+}
 
 void Scene::update(Camera& camera)
 {

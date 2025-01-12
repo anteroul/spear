@@ -1,3 +1,5 @@
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keycode.h>
 #include <spear/camera.hh>
 #include <spear/delta_time.hh>
 #include <spear/event_handler.hh>
@@ -6,7 +8,6 @@
 #include <spear/scene_manager.hh>
 #include <spear/window.hh>
 
-#include <spear/game_object.hh>
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>
@@ -44,6 +45,7 @@ int main()
     spear::Camera camera;
     spear::MovementController movement_controller(camera);
     spear::EventHandler eventHandler;
+    spear::SceneManager scene_manager;
 
     // clang-format off
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
@@ -71,47 +73,69 @@ int main()
     });
     // clang-format on
 
+    namespace bullet = spear::physics::bullet;
+    namespace opengl = spear::rendering::opengl;
+
     // Bullet world.
-    spear::physics::bullet::World bullet_world;
+    bullet::World bullet_world;
     auto shared_bullet_world = std::make_shared<btDiscreteDynamicsWorld>(*bullet_world.getDynamicsWorld());
 
-    using namespace spear::rendering::opengl;
-    using namespace spear::physics::bullet;
-
     // Texture creation.
-    auto niilo_texture = std::make_shared<SDLTexture>("niilo.jpg");
-    auto wallnut_texture = std::make_shared<SDLTexture>("wallnut.jpg");
+    auto niilo_texture = std::make_shared<opengl::SDLTexture>("niilo.jpg");
+    auto wallnut_texture = std::make_shared<opengl::SDLTexture>("wallnut.jpg");
 
-    spear::SceneManager scene_manager;
-    spear::Scene example_scene;
+    auto default_size = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    auto example_scene_container = spear::Scene::Container{
-            std::make_shared<Cube>(wallnut_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-            std::make_shared<OBJModel>("test.obj", "test.mtl", wallnut_texture,
-                                       ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-            Cube::create(niilo_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, 13.0f), glm::vec3(1.0f, 1.0f, 1.0f))),
-            std::make_shared<Quad>(ObjectData(shared_bullet_world, 1.0f, glm::vec3(2.0f, 8.0f, 1.0f), glm::vec3(1.0f, 1.0f, 1.0f)), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)),
-            std::make_shared<Sphere>(niilo_texture, ObjectData(shared_bullet_world, 1.0f, glm::vec3(4.0f, 3.f, -4.f), glm::vec3(1.0f, 1.0f, 1.0f)))};
+    // clang-format off
+    spear::Scene scene1;
+    auto scene1_objects = spear::Scene::Container {
+        std::make_shared<opengl::Cube>(wallnut_texture, bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 1.0f, 1.0f), default_size)),
+        std::make_shared<opengl::OBJModel>("test.obj", "test.mtl", wallnut_texture,
+                                   bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, -15.0f), default_size)),
+        opengl::Cube::create(niilo_texture, bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.0f, 5.0f, 13.0f), default_size)),
+        std::make_shared<opengl::Quad>(bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(2.0f, 8.0f, 1.0f), default_size), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)),
+        std::make_shared<opengl::Sphere>(niilo_texture, bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(4.0f, 3.f, -4.f), default_size))
+    };
+    scene1_objects[0]->translate(glm::vec3(0.0f, -4.0f, 0.0f));
+    scene1_objects[0]->scale(glm::vec3(1000.0f, 1.0f, 1000.0f));
+    uint64_t scene1_id = scene1.getId();
+    scene1.setObjects(std::move(scene1_objects));
+    scene_manager.addScene(std::move(scene1));
 
-    example_scene_container[0]->translate(glm::vec3(0.0f, -4.0f, 0.0f));
-    example_scene_container[0]->scale(glm::vec3(1000.0f, 1.0f, 1000.0f));
-    example_scene.setObjects(std::move(example_scene_container));
+    spear::Scene scene2;
+    auto scene2_objects = spear::Scene::Container {
+        std::make_shared<opengl::Cube>(wallnut_texture, bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(10.0f, 2.0f, 101.0f), default_size)),
+        std::make_shared<opengl::Quad>(bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(122.0f, -228.0f, -231.0f), default_size), glm::vec4(1.0f, 0.5f, 0.5f, 1.0f)),
+        std::make_shared<opengl::Sphere>(niilo_texture, bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(204.0f, 343.f, -4324.4f), default_size))
+    };
+    scene2_objects[0]->translate(glm::vec3(0.0f, -4.0f, 0.0f));
+    uint64_t scene2_id = scene2.getId();
+    scene2.setObjects(std::move(scene2_objects));
+    scene_manager.addScene(std::move(scene2));
+    // clang-format on
 
     spear::DeltaTime delta_time_interface;
-    std::unordered_map<SDL_Keycode, bool> keyStates = {
-            {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
 
-    scene_manager.addScene(std::move(example_scene));
+    scene_manager.loadScene(scene1_id);
     auto current_scene = scene_manager.getCurrentScene();
+
     while (true)
     {
+        auto new_scene = scene_manager.getCurrentScene();
+        if (current_scene != new_scene)
+        {
+            current_scene = new_scene;
+        }
+
         float delta_time = delta_time_interface.getDeltaTime();
 
         // Rendering.
         renderer.render();
 
-        current_scene.update(camera);
+        // Update object's in scene.
+        current_scene->update(camera);
 
+        // Run bullet simulation.
         bullet_world.stepSimulation(1.0f / 60.f);
 
         // Event handling.

@@ -22,6 +22,7 @@ set(SOURCES
     #src/sprite3d.cc
 
     src/delta_time.cc
+    src/util.cc
     src/window.cc
     src/transform.cc
     src/event_handler.cc

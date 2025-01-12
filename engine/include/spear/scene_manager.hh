@@ -16,15 +16,28 @@ public:
         m_scenes.emplace_back(std::move(scene));
     }
 
+    /// Set m_currentScene.
+    /// \param name The name of the scene.
+    void loadScene(const std::string& name);
+
+    /// Set m_currentScene.
+    /// \param id The id of the scene.
+    void loadScene(uint64_t id);
+
+    void createScenes(std::vector<Scene>&& scenes)
+    {
+        m_scenes = std::move(scenes);
+    }
+
     bool removeObject(const std::string& name);
 
-    // TODO
-    Scene& getCurrentScene()
+    Scene* getCurrentScene()
     {
-        return m_scenes[0];
+        return m_currentScene;
     }
 
 private:
+    Scene* m_currentScene = nullptr;
     std::vector<Scene> m_scenes;
 };
 
