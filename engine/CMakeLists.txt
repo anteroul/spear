@@ -21,7 +21,7 @@ set(SOURCES
     #src/material.cc
     #src/sprite3d.cc
 
-    src/delta_time.cc
+    src/time.cc
     src/util.cc
     src/window.cc
     src/transform.cc
@@ -31,6 +31,7 @@ set(SOURCES
     src/movement_controller.cc
     src/scene_manager.cc
     src/scene.cc
+    src/create_scene.cc
     src/mesh.cc
 
     # Physics
