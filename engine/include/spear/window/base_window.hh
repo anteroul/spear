@@ -1,18 +1,14 @@
 #ifndef SPEAR_WINDOW_HH
 #define SPEAR_WINDOW_HH
 
-#include <spear/rendering/api.hh>
+#include <SDL3/SDL.h>
 
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_video.h>
-
-#include <cstdint>
 #include <string>
 
 namespace spear
 {
 
-class Window
+class BaseWindow
 {
 public:
     struct Size
@@ -21,21 +17,23 @@ public:
     };
 
     /// Constructor.
-    Window(const std::string& window_name, Size size, rendering::API api);
+    BaseWindow(const std::string& window_name, Size size);
 
     /// Destructor.
-    ~Window();
+    virtual ~BaseWindow();
 
-    SDL_Window* getSDLWindow() const
-    {
-        return m_window;
-    }
+    virtual void update() = 0;
+    virtual void initializeContext() = 0;
 
-    void update(rendering::API api);
     void resize();
     Size getSize() const
     {
         return m_size;
+    }
+
+    SDL_Window* getSDLWindow() const
+    {
+        return m_window;
     }
 
     /// Set visibility of the cursor.
@@ -47,15 +45,13 @@ public:
 
     void setRelativeMouseMode(bool is_relative);
 
-private:
-    void createWindow(const std::string& title, Size size, rendering::API api);
-    void initializeContext(rendering::API api);
+protected:
+    void createWindow(uint32_t flags);
 
 private:
     SDL_Window* m_window;
-    SDL_GLContext m_glContext;
+    std::string m_window_name;
     Size m_size;
-    rendering::API m_api;
 };
 
 } // namespace spear

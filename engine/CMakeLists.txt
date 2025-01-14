@@ -10,6 +10,7 @@ find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
+find_package(Vulkan REQUIRED)
 find_package(Bullet REQUIRED)
 
 add_compile_options(-Wall -Wextra -pedantic -std=c++20)
@@ -23,7 +24,6 @@ set(SOURCES
 
     src/time.cc
     src/util.cc
-    src/window.cc
     src/transform.cc
     src/event_handler.cc
     src/game_object.cc
@@ -33,6 +33,11 @@ set(SOURCES
     src/scene.cc
     src/create_scene.cc
     src/mesh.cc
+
+    # Window
+    src/window/base_window.cc
+    src/window/opengl_window.cc
+    src/window/vulkan_window.cc
 
     # Physics
     src/physics/constants.cc
@@ -50,8 +55,9 @@ set(SOURCES
     src/rendering/api.cc
     src/rendering/base_shader.cc
     src/rendering/base_texture.cc
-    src/rendering/shader_type.cc
     src/rendering/base_model.cc
+    src/rendering/base_renderer.cc
+    src/rendering/shader_type.cc
 
     # Rendering Shapes
     src/rendering/shapes/shape.cc
@@ -73,6 +79,9 @@ set(SOURCES
 
     # Rendering OpenGL Model
     src/rendering/opengl/model/obj_model.cc
+
+    # Rendering Vulkan
+    src/rendering/vulkan/renderer.cc
 )
 
 message(STATUS "Bullet include dirs: ${BULLET_INCLUDE_DIRS}")
@@ -81,9 +90,10 @@ message(STATUS "Bullet libraries: ${BULLET_LIBRARIES}")
 include_directories(${SDL_INCLUDE_DIRS} ${SDL3_IMAGE_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
 
 add_library(spear ${SOURCES})
-target_include_directories(spear PUBLIC include PUBLIC ${BULLET_INCLUDE_DIRS})
+target_include_directories(spear PUBLIC include PUBLIC ${BULLET_INCLUDE_DIRS} PRIVATE ${VULKAN_INCLUDE_DIRS})
 target_link_libraries(spear
     PRIVATE SDL3::SDL3 SDL3_image::SDL3_image
     PRIVATE OpenGL::GL GLEW::GLEW
+    PRIVATE Vulkan::Vulkan
     PRIVATE ${BULLET_LIBRARIES}
 )

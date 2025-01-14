@@ -5,7 +5,8 @@
 #include <spear/movement_controller.hh>
 #include <spear/scene_manager.hh>
 #include <spear/time.hh>
-#include <spear/window.hh>
+
+#include <spear/window/opengl_window.hh>
 
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
@@ -25,10 +26,11 @@
 int main()
 {
     const std::string window_name = "Spear application";
-    const spear::Window::Size window_size = {820, 640};
+    const spear::BaseWindow::Size window_size = {820, 640};
     const spear::rendering::API gl_api = spear::rendering::API::OpenGL;
 
-    spear::Window window(window_name, window_size, gl_api);
+    spear::OpenGLWindow window(window_name, window_size);
+    window.initializeContext();
     window.hideCursor(true);
     window.setMouseGrab(true);
     window.setRelativeMouseMode(true);
@@ -43,7 +45,7 @@ int main()
     namespace bullet = spear::physics::bullet;
     namespace opengl = spear::rendering::opengl;
 
-    opengl::Renderer renderer(window.getSDLWindow());
+    opengl::Renderer renderer(window);
     renderer.init();
     renderer.setViewPort(w_size.x, w_size.y);
     renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
@@ -154,7 +156,7 @@ int main()
         eventHandler.handleEvents(movement_controller, delta_time);
 
         // Update SDL_Window if using OpenGL.
-        window.update(gl_api);
+        window.update();
 
         time_interface.delay(16); // 60 fps.
     }

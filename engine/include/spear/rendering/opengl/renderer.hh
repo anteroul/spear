@@ -1,34 +1,27 @@
 #ifndef SPEAR_RENDERING_RENDERER_HH
 #define SPEAR_RENDERING_RENDERER_HH
 
-#include <GL/glew.h>
-#include <SDL3/SDL.h>
+#include <spear/rendering/base_renderer.hh>
+#include <spear/window/opengl_window.hh>
 
 namespace spear::rendering::opengl
 {
 
-class Renderer
+class Renderer : public BaseRenderer
 {
 public:
     /// Constructor.
-    Renderer(SDL_Window* window);
+    Renderer(OpenGLWindow& window);
 
     // Destructor.
     ~Renderer();
 
-    void render();
-    void setViewPort(int width, int height)
-    {
-        glViewport(0, 0, width, height);
-    }
-
-    void setBackgroundColor(float r, float g, float b, float a);
-    void init();
+    void render() override;
+    void setViewPort(int width, int height) override;
+    void setBackgroundColor(float r, float g, float b, float a) override;
+    void init() override;
 
 private:
-private:
-    SDL_Window* m_window;
-    uint32_t m_shader_program;
     SDL_GLContext m_context;
 };
 
