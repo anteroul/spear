@@ -15,7 +15,6 @@ public:
     /// Destructor.
     ~OpenGLWindow() = default;
 
-    void initializeContext() override {};
     void update() override;
 };
 

@@ -14,9 +14,7 @@ public:
     Renderer(VulkanWindow& vulkan_window);
 
     // Destructor.
-    ~Renderer()
-    {
-    }
+    ~Renderer();
 
     void render() override;
     void setViewPort(int width, int height) override
@@ -29,8 +27,13 @@ public:
     void init() override;
 
 private:
-    VkInstance m_instance;
-    VkSurfaceKHR m_surface;
+    void createDevice();
+    void createSwapChain();
+    void cleanup();
+
+private:
+    VkInstance& m_instance;
+    VkSurfaceKHR& m_surface;
     VkDevice m_device = VK_NULL_HANDLE;
     VkSwapchainKHR m_swapChain = VK_NULL_HANDLE;
 };

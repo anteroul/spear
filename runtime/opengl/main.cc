@@ -30,7 +30,6 @@ int main()
     const spear::rendering::API gl_api = spear::rendering::API::OpenGL;
 
     spear::OpenGLWindow window(window_name, window_size);
-    window.initializeContext();
     window.hideCursor(true);
     window.setMouseGrab(true);
     window.setRelativeMouseMode(true);

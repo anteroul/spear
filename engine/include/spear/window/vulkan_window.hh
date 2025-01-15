@@ -17,11 +17,30 @@ public:
     /// Destructor.
     ~VulkanWindow();
 
-    void initializeContext() override;
     void update() override;
 
+    const VkInstance& getVkInstance() const
+    {
+        return m_vkInstance;
+    }
+
+    VkInstance& getVkInstance()
+    {
+        return m_vkInstance;
+    }
+
+    const VkSurfaceKHR& getVkSurface() const
+    {
+        return m_vkSurface;
+    }
+
+    VkSurfaceKHR& getVkSurface()
+    {
+        return m_vkSurface;
+    }
+
 private:
-    void createVulkanInstance();
+    VkInstance createVulkanInstance();
     void createVulkanSurface();
 
 private:

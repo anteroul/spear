@@ -23,9 +23,9 @@ public:
     virtual void setBackgroundColor(float r, float g, float b, float a) = 0;
 
 protected:
-    SDL_Window* getWindow()
+    const BaseWindow& getWindow() const
     {
-        return m_baseWindow.getSDLWindow();
+        return m_baseWindow;
     }
 
 private:

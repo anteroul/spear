@@ -18,7 +18,7 @@ Renderer::~Renderer()
 
 void Renderer::init()
 {
-    m_context = SDL_GL_CreateContext(getWindow());
+    m_context = SDL_GL_CreateContext(getWindow().getSDLWindow());
     if (!m_context)
     {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << std::endl;

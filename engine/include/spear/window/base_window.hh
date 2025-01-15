@@ -23,7 +23,6 @@ public:
     virtual ~BaseWindow();
 
     virtual void update() = 0;
-    virtual void initializeContext() = 0;
 
     void resize();
     Size getSize() const
@@ -34,6 +33,11 @@ public:
     SDL_Window* getSDLWindow() const
     {
         return m_window;
+    }
+
+    const std::string& getWindowName() const
+    {
+        return m_window_name;
     }
 
     /// Set visibility of the cursor.
