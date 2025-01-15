@@ -1,7 +1,7 @@
 # SPEAR
 <p align="left">
   <a href="https://github.com/NeuronActivation/spear">
-    <img src="logo.png" width="400" alt="SPEAR logo">
+    <img src=".github/spear.png" width="200" alt="SPEAR logo">
   </a>
 </p>
 
