@@ -8,7 +8,7 @@ namespace spear::physics::bullet
 {
 
 Object::Object(ObjectData&& object_data)
-    : BaseObject(object_data.getMass()),
+    : PhysicsObject(object_data.getMass()),
       m_dynamicsWorld(object_data.getWorld()),
       m_collisionShape(std::make_unique<btBoxShape>(object_data.getSizeAsBulletVec3()))
 {
@@ -33,7 +33,7 @@ Object::Object(ObjectData&& object_data)
 }
 
 Object::Object(Object&& other)
-    : BaseObject(std::move(other)),
+    : PhysicsObject(std::move(other)),
       m_dynamicsWorld(std::move(other.m_dynamicsWorld)),
       m_collisionShape(std::move(other.m_collisionShape)),
       m_motionState(std::move(other.m_motionState)),
@@ -45,7 +45,7 @@ Object& Object::operator=(Object&& other)
 {
     if (this != &other)
     {
-        BaseObject::operator=(std::move(other)),
+        PhysicsObject::operator=(std::move(other)),
         m_dynamicsWorld = std::move(other.m_dynamicsWorld);
         m_collisionShape = std::move(other.m_collisionShape);
         m_motionState = std::move(other.m_motionState);

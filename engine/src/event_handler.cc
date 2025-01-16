@@ -18,11 +18,18 @@ void EventHandler::handleEvents(MovementController& movement_controller, float d
         // If no callback was set for SDL_QUIT, set running to false directly.
         if (event.type == SDL_EVENT_QUIT && callbacks.find(SDL_EVENT_QUIT) == callbacks.end())
         {
-            running = false;
+            exit(0);
         }
 
         if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP)
         {
+            for (auto& key : m_inputKeys)
+            {
+                if (event.key.key == key.first)
+                {
+                    key.second();
+                }
+            }
             bool isPressed = (event.type == SDL_EVENT_KEY_DOWN);
             if (keyStates.find(event.key.key) != keyStates.end())
             {
@@ -32,6 +39,11 @@ void EventHandler::handleEvents(MovementController& movement_controller, float d
     }
 
     movement_controller.processInput(keyStates, delta_time);
+}
+
+void EventHandler::handleInput(SDL_Keycode key, const std::function<void()>& callback)
+{
+    m_inputKeys.emplace_back(key, callback);
 }
 
 } // namespace spear
