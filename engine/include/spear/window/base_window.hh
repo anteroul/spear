@@ -16,10 +16,6 @@ public:
         int x, y;
     };
 
-    struct WindowOptions
-    {
-    };
-
     /// Constructor.
     BaseWindow(const std::string& window_name, Size size);
 

@@ -41,7 +41,7 @@ set(SOURCES
 
     # Physics
     src/physics/constants.cc
-        src/physics/physics_object.cc
+    src/physics/physics_object.cc
 
     # Physics bullet
     src/physics/bullet/object_data.cc
