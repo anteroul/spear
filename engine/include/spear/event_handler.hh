@@ -24,6 +24,9 @@ public:
     /// Process SDL events and call registered callbacks
     void handleEvents(MovementController& movement_controller, float delta_time);
 
+    /// Handle custom events from key input
+    void handleInput(SDL_Keycode key, const std::function<void()>& callback);
+
     /// Check if the application is still running
     bool isRunning() const
     {
@@ -41,6 +44,7 @@ private:
     std::unordered_map<SDL_Keycode, bool> keyStates = {
             {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
     bool running = true;
+    std::vector<std::pair<SDL_Keycode, std::function<void()>>> m_inputKeys;
 };
 
 } // namespace spear

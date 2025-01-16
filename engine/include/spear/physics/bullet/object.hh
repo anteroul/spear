@@ -1,8 +1,8 @@
 #ifndef SPEAR_PHYSICS_BULLET_OBJECT_HH
 #define SPEAR_PHYSICS_BULLET_OBJECT_HH
 
-#include <spear/physics/base_object.hh>
 #include <spear/physics/bullet/object_data.hh>
+#include <spear/physics/physics_object.hh>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -13,7 +13,7 @@
 namespace spear::physics::bullet
 {
 
-class Object : public BaseObject
+class Object : public PhysicsObject
 {
 public:
     /// Constructor.

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.27)
 project(spear)
 
 set(CMAKE_BUILD_TYPE Debug)
@@ -41,7 +41,7 @@ set(SOURCES
 
     # Physics
     src/physics/constants.cc
-    src/physics/base_object.cc
+        src/physics/physics_object.cc
 
     # Physics bullet
     src/physics/bullet/object_data.cc

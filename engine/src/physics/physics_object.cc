@@ -1,21 +1,21 @@
-#include <spear/physics/base_object.hh>
+#include <spear/physics/physics_object.hh>
 
 #include <utility>
 
 namespace spear::physics
 {
 
-BaseObject::BaseObject(float mass)
+PhysicsObject::PhysicsObject(float mass)
     : m_mass(mass)
 {
 }
 
-BaseObject::BaseObject(BaseObject&& other)
+PhysicsObject::PhysicsObject(PhysicsObject&& other)
     : m_mass(std::move(other.m_mass))
 {
 }
 
-BaseObject& BaseObject::operator=(BaseObject&& other)
+PhysicsObject& PhysicsObject::operator=(PhysicsObject&& other)
 {
     if (this != &other)
     {

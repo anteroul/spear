@@ -101,6 +101,11 @@ int main()
     });
 
     spear::EventHandler eventHandler;
+
+    eventHandler.handleInput(SDLK_ESCAPE, [](){
+        exit(0);
+    });
+
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
     {
         std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl;
