@@ -37,14 +37,16 @@ int main()
     // Scene swapping.
     spear::Time time_interface;
 
+    // clang-format off
     spear::EventHandler eventHandler;
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
                                   { std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl; });
 
     eventHandler.registerCallback(SDL_EVENT_QUIT, [](const SDL_Event&)
-                                  {
+    {
         std::cout << "Quit event received. Exiting..." << std::endl;
-        exit(0); });
+        exit(0);
+    });
 
     // Mouse movement.
     eventHandler.registerCallback(SDL_EVENT_MOUSE_MOTION, [&camera](const SDL_Event& event)
@@ -52,16 +54,16 @@ int main()
 
     // Update window size.
     eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window, &renderer](const SDL_Event&)
-                                  {
+    {
         std::cout << "Window resized!" << std::endl;
         window.resize();
         auto w_size = window.getSize();
-        renderer.setViewPort(w_size.x, w_size.y); });
+        renderer.setViewPort(w_size.x, w_size.y);
+    });
     // clang-format on
 
     auto scene_objects = spear::Scene::Container{};
-    auto scene_function = [](spear::Scene::Container& objects) {
-    };
+    auto scene_function = [](spear::Scene::Container& objects) {};
 
     auto scene_id = spear::createScene(scene_objects, scene_function, scene_manager);
     scene_manager.loadScene(scene_id);
@@ -88,7 +90,7 @@ int main()
         // Event handling.
         eventHandler.handleEvents(movement_controller, delta_time);
 
-        // Update SDL_Window if using OpenGL.
+        // Update SDL_Window.
         window.update();
 
         time_interface.delay(16); // 60 fps.

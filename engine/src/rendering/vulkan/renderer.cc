@@ -7,10 +7,23 @@ namespace spear::rendering::vulkan
 {
 
 Renderer::Renderer(VulkanWindow& vulkan_window)
-    : BaseRenderer(vulkan_window),
-      m_instance(vulkan_window.getVkInstance()),
-      m_surface(vulkan_window.getVkSurface())
+    : BaseRenderer(vulkan_window)
 {
+    auto window_size = vulkan_window.getSize();
+    m_instance = vulkan_window.createVulkanInstance();
+    m_surface = vulkan_window.createVulkanSurface(m_instance);
+
+    m_deviceManager.initialize(m_instance, m_surface);
+
+    m_swapchain.initialize(m_deviceManager.getDevice(), m_deviceManager.getPhysicalDevice(), m_surface, window_size.x, window_size.y);
+
+    m_renderPassManager.initialize(m_deviceManager.getDevice(), m_swapchain.getFormat());
+
+    m_frameBufferManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_swapchain.getExtent());
+
+    m_commandBufferManager.initialize(m_deviceManager.getDevice(), m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
+
+    m_synchronization.initialize(m_deviceManager.getDevice(), m_framesInFlight);
 }
 
 Renderer::~Renderer()
@@ -20,112 +33,130 @@ Renderer::~Renderer()
 
 void Renderer::init()
 {
-    createDevice();
-    createSwapChain();
 }
 
 void Renderer::render()
 {
+    drawFrame();
 }
 
-void Renderer::createDevice()
+void Renderer::drawFrame()
 {
-    // Query physical devices and select one that supports Vulkan
-    uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
-    if (deviceCount == 0)
+    VkDevice device = m_deviceManager.getDevice();
+    VkQueue graphicsQueue = m_deviceManager.getGraphicsQueue();
+    VkQueue presentQueue = m_deviceManager.getPresentQueue();
+
+    auto fence = m_synchronization.getInFlightFence(m_currentFrame);
+    vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+    vkResetFences(device, 1, &fence);
+
+    // Acquire an image from the swap chain
+    uint32_t imageIndex;
+    VkResult result = vkAcquireNextImageKHR(device,
+                                            m_swapchain.getSwapchain(),
+                                            UINT64_MAX,
+                                            m_synchronization.getImageAvailableSemaphore(m_currentFrame),
+                                            VK_NULL_HANDLE,
+                                            &imageIndex);
+
+    const auto& vulkan_window = *dynamic_cast<const VulkanWindow*>(&BaseRenderer::getWindow());
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        throw std::runtime_error("No Vulkan-compatible GPUs found!");
+        m_swapchain.recreate(m_deviceManager.getPhysicalDevice(),
+                             m_deviceManager.getDevice(),
+                             m_surface,
+                             vulkan_window);
+        std::cerr << "Out of data KHR" << std::endl;
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("Failed to acquire swap chain image!");
     }
 
-    std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
+    // Record command buffer
+    m_commandBufferManager.beginCommandBuffer(imageIndex);
+    VkCommandBuffer commandBuffer = m_commandBufferManager.getCommandBuffers()[imageIndex];
 
-    // Pick the first device for simplicity
-    VkPhysicalDevice physicalDevice = devices[0];
-    std::cout << "Selected Vulkan physical device." << std::endl;
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_renderPassManager.getRenderPass();
+    renderPassInfo.framebuffer = m_frameBufferManager.getFrameBuffers()[imageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = m_swapchain.getExtent();
 
-    // Check for device extensions
-    uint32_t extensionCount = 0;
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
 
-    std::vector<VkExtensionProperties> extensions(extensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, extensions.data());
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineManager.getPipeline());
+    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    vkCmdEndRenderPass(commandBuffer);
 
-    // Ensure VK_KHR_swapchain is supported
-    const char* requiredExtensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-    bool swapchainSupported = false;
-    for (const auto& ext : extensions)
+    m_commandBufferManager.endCommandBuffer(commandBuffer);
+
+    // Submit command buffer
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {m_synchronization.getImageAvailableSemaphore(m_currentFrame)};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    VkSemaphore signalSemaphores[] = {m_synchronization.getRenderFinishedSemaphore(m_currentFrame)};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, m_synchronization.getInFlightFence(m_currentFrame)) != VK_SUCCESS)
     {
-        if (strcmp(ext.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0)
-        {
-            swapchainSupported = true;
-            break;
-        }
+        throw std::runtime_error("Failed to submit draw command buffer!");
     }
 
-    if (!swapchainSupported)
+    // Present the image
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    VkSwapchainKHR swapChains[] = {m_swapchain.getSwapchain()};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
-        throw std::runtime_error("VK_KHR_swapchain extension not supported by the selected device.");
+        m_swapchain.recreate(m_deviceManager.getPhysicalDevice(),
+                             m_deviceManager.getDevice(),
+                             m_surface,
+                             vulkan_window);
+        std::cerr << "Fail" << std::endl;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to present swap chain image!");
     }
 
-    // Logical device creation
-    float queuePriority = 1.0f;
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = 0; // Replace with a proper queue family index
-    queueCreateInfo.queueCount = 1;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
-
-    VkDeviceCreateInfo deviceCreateInfo{};
-    deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    deviceCreateInfo.queueCreateInfoCount = 1;
-    deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-    deviceCreateInfo.enabledExtensionCount = 1;
-    deviceCreateInfo.ppEnabledExtensionNames = requiredExtensions;
-
-    if (vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create Vulkan device!");
-    }
-    std::cout << "Vulkan logical device created." << std::endl;
-}
-
-void Renderer::createSwapChain()
-{
-    auto window_size = BaseRenderer::getWindow().getSize();
-
-    VkSwapchainCreateInfoKHR swapChainCreateInfo{};
-    swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapChainCreateInfo.surface = m_surface;
-    swapChainCreateInfo.minImageCount = 2;
-    swapChainCreateInfo.imageFormat = VK_FORMAT_B8G8R8A8_SRGB;
-    swapChainCreateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    swapChainCreateInfo.imageExtent = {static_cast<uint32_t>(window_size.x), static_cast<uint32_t>(window_size.y)};
-    swapChainCreateInfo.imageArrayLayers = 1;
-    swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    swapChainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-    swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    swapChainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    swapChainCreateInfo.clipped = VK_TRUE;
-
-    if (vkCreateSwapchainKHR(m_device, &swapChainCreateInfo, nullptr, &m_swapChain) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create Vulkan swap chain!");
-    }
-    std::cout << "Vulkan swap chain created successfully." << std::endl;
+    m_currentFrame = (m_currentFrame + 1) % m_framesInFlight;
 }
 
 void Renderer::cleanup()
 {
-    if (m_swapChain != VK_NULL_HANDLE)
-    {
-        vkDestroySwapchainKHR(m_device, m_swapChain, nullptr);
-    }
-    if (m_device != VK_NULL_HANDLE)
-    {
-        vkDestroyDevice(m_device, nullptr);
-    }
+    // m_deviceManager.waitIdle();
+    m_synchronization.cleanup(m_deviceManager.getDevice());
+    m_pipelineManager.cleanup(m_deviceManager.getDevice());
+    m_frameBufferManager.cleanup(m_deviceManager.getDevice());
+    m_renderPassManager.cleanup(m_deviceManager.getDevice());
+    m_swapchain.cleanup(m_deviceManager.getDevice());
+    m_deviceManager.cleanup();
 }
 
 } // namespace spear::rendering::vulkan

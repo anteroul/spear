@@ -82,6 +82,15 @@ set(SOURCES
 
     # Rendering Vulkan
     src/rendering/vulkan/renderer.cc
+
+    # Rendering Vulkan core
+    src/rendering/vulkan/core/command_buffer_manager.cc
+    src/rendering/vulkan/core/framebuffer_manager.cc
+    src/rendering/vulkan/core/render_pass_manager.cc
+    src/rendering/vulkan/core/synchronization.cc
+    src/rendering/vulkan/core/device_manager.cc
+    src/rendering/vulkan/core/pipeline_manager.cc
+    src/rendering/vulkan/core/swapchain.cc
 )
 
 message(STATUS "Bullet include dirs: ${BULLET_INCLUDE_DIRS}")

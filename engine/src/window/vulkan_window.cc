@@ -4,29 +4,19 @@
 
 #include <iostream>
 #include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace spear
 {
 
 VulkanWindow::VulkanWindow(const std::string& window_name, BaseWindow::Size size)
-    : BaseWindow(window_name, size),
-      m_vkSurface(VK_NULL_HANDLE)
+    : BaseWindow(window_name, size)
 {
     createWindow(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE);
-    m_vkInstance = createVulkanInstance();
-    createVulkanSurface();
 }
 
 VulkanWindow::~VulkanWindow()
 {
-    if (m_vkSurface != VK_NULL_HANDLE)
-    {
-        vkDestroySurfaceKHR(m_vkInstance, m_vkSurface, nullptr);
-    }
-    if (m_vkInstance != VK_NULL_HANDLE)
-    {
-        vkDestroyInstance(m_vkInstance, nullptr);
-    }
 }
 
 VkInstance VulkanWindow::createVulkanInstance()
@@ -72,12 +62,14 @@ VkInstance VulkanWindow::createVulkanInstance()
     return instance;
 }
 
-void VulkanWindow::createVulkanSurface()
+VkSurfaceKHR VulkanWindow::createVulkanSurface(VkInstance instance)
 {
-    if (!SDL_Vulkan_CreateSurface(getSDLWindow(), m_vkInstance, nullptr, &m_vkSurface))
+    VkSurfaceKHR surface;
+    if (!SDL_Vulkan_CreateSurface(getSDLWindow(), instance, nullptr, &surface))
     {
         throw std::runtime_error("Failed to create Vulkan surface: " + std::string(SDL_GetError()));
     }
+    return surface;
 }
 
 void VulkanWindow::update()
