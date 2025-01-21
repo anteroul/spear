@@ -27,6 +27,7 @@ void CommandBufferManager::beginCommandBuffer(uint32_t image_index)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
     if (vkBeginCommandBuffer(m_commandBuffers[image_index], &beginInfo) != VK_SUCCESS)
     {

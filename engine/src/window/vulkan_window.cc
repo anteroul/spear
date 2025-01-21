@@ -52,6 +52,11 @@ VkInstance VulkanWindow::createVulkanInstance()
     createInfo.enabledLayerCount = 0;
     createInfo.ppEnabledLayerNames = nullptr;
 
+    // Enable validation layers
+    const char* validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
+    createInfo.enabledLayerCount = 1;
+    createInfo.ppEnabledLayerNames = validationLayers;
+
     VkInstance instance;
     VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
     if (result != VK_SUCCESS)

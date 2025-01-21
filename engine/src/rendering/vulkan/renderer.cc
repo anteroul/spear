@@ -1,10 +1,19 @@
 #include <spear/rendering/vulkan/renderer.hh>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+
 #include <iostream>
-#include <vector>
 
 namespace spear::rendering::vulkan
 {
+
+struct Vertex
+{
+    glm::vec3 position;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+};
 
 Renderer::Renderer(VulkanWindow& vulkan_window)
     : BaseRenderer(vulkan_window)
@@ -14,15 +23,11 @@ Renderer::Renderer(VulkanWindow& vulkan_window)
     m_surface = vulkan_window.createVulkanSurface(m_instance);
 
     m_deviceManager.initialize(m_instance, m_surface);
-
     m_swapchain.initialize(m_deviceManager.getDevice(), m_deviceManager.getPhysicalDevice(), m_surface, window_size.x, window_size.y);
-
     m_renderPassManager.initialize(m_deviceManager.getDevice(), m_swapchain.getFormat());
-
     m_frameBufferManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_swapchain.getExtent());
-
+    m_pipelineManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getExtent());
     m_commandBufferManager.initialize(m_deviceManager.getDevice(), m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
-
     m_synchronization.initialize(m_deviceManager.getDevice(), m_framesInFlight);
 }
 
@@ -43,6 +48,11 @@ void Renderer::render()
 void Renderer::drawFrame()
 {
     VkDevice device = m_deviceManager.getDevice();
+    if (device == VK_NULL_HANDLE)
+    {
+        std::cerr << "Device is null" << std::endl;
+        return;
+    }
     VkQueue graphicsQueue = m_deviceManager.getGraphicsQueue();
     VkQueue presentQueue = m_deviceManager.getPresentQueue();
 
@@ -60,7 +70,7 @@ void Renderer::drawFrame()
                                             &imageIndex);
 
     const auto& vulkan_window = *dynamic_cast<const VulkanWindow*>(&BaseRenderer::getWindow());
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
         m_swapchain.recreate(m_deviceManager.getPhysicalDevice(),
                              m_deviceManager.getDevice(),
@@ -77,20 +87,54 @@ void Renderer::drawFrame()
     // Record command buffer
     m_commandBufferManager.beginCommandBuffer(imageIndex);
     VkCommandBuffer commandBuffer = m_commandBufferManager.getCommandBuffers()[imageIndex];
+    if (commandBuffer == VK_NULL_HANDLE)
+    {
+        std::cerr << "Command buffer is null" << std::endl;
+        return;
+    }
+
+    auto render_pass = m_renderPassManager.getRenderPass();
+    if (render_pass == VK_NULL_HANDLE)
+    {
+        std::cerr << "Render pass is null" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Render Pass Handle: " << render_pass << std::endl;
+    }
+    auto frame_buffer = m_frameBufferManager.getFrameBuffers()[imageIndex];
+    if (frame_buffer == VK_NULL_HANDLE)
+    {
+        std::cerr << "Frame buffer is null" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Framebuffer Handle: " << frame_buffer << std::endl;
+    }
+    auto extent = m_swapchain.getExtent();
+    std::cout << "Render area extent x: " << extent.width << " y: " << extent.height << std::endl;
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_renderPassManager.getRenderPass();
-    renderPassInfo.framebuffer = m_frameBufferManager.getFrameBuffers()[imageIndex];
+    renderPassInfo.renderPass = render_pass;
+    renderPassInfo.framebuffer = frame_buffer;
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = m_swapchain.getExtent();
+    renderPassInfo.renderArea.extent = extent;
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
+    auto pipeline = m_pipelineManager.getPipeline();
+    if (pipeline == VK_NULL_HANDLE)
+    {
+        throw std::runtime_error("Pipeline is null");
+    }
+
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineManager.getPipeline());
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     vkCmdDraw(commandBuffer, 3, 1, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
 
@@ -121,7 +165,6 @@ void Renderer::drawFrame()
     // Present the image
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 

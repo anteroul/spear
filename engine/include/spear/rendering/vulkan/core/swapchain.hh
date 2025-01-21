@@ -38,6 +38,14 @@ public:
 
 private:
     void createImageViews(VkDevice device);
+    bool isSwapchainSupported(VkPhysicalDevice physicalDevice);
+    VkSurfaceCapabilitiesKHR querySurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int width, int height);
+    VkSurfaceFormatKHR chooseSurfaceFormat(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+    VkPresentModeKHR choosePresentMode(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+    VkSwapchainCreateInfoKHR createSwapchainCreateInfo(VkSurfaceKHR surface, const VkSurfaceCapabilitiesKHR& capabilities,
+                                                       VkExtent2D extent, VkSurfaceFormatKHR surfaceFormat, VkPresentModeKHR presentMode);
+    void retrieveSwapchainImages(VkDevice device);
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
