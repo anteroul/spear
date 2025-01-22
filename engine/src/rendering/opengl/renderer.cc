@@ -44,7 +44,9 @@ void Renderer::render()
 
 void Renderer::setBackgroundColor(float r, float g, float b, float a)
 {
-    glClearColor(r, g, b, a);
+    BaseRenderer::setBackgroundColor(glm::vec4(r, g, b, a));
+    auto color = BaseRenderer::getBackgroundColor();
+    glClearColor(color->r, color->g, color->b, color->a);
 }
 
 } // namespace spear::rendering::opengl

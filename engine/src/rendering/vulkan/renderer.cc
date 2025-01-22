@@ -123,7 +123,15 @@ void Renderer::drawFrame()
     renderPassInfo.renderArea.extent = extent;
 
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.5f, 0.0f, 0.0f, 1.0f}};
+    if (hasBackgroundColor())
+    {
+        auto bg_color = BaseRenderer::getBackgroundColor().value();
+        clearValues[0].color = {{bg_color.r, bg_color.g, bg_color.b, bg_color.a}};
+    }
+    else
+    {
+        clearValues[0].color = {{1.0f, 1.0f, 1.0f, 1.0f}};
+    }
     clearValues[1].depthStencil = {1.0f, 0};
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -248,6 +256,11 @@ void Renderer::setViewPort(int width, int height)
         std::cerr << "Failed to end command buffer: " << result << std::endl;
         return;
     }
+}
+
+void Renderer::setBackgroundColor(float r, float g, float b, float a)
+{
+    BaseRenderer::setBackgroundColor(glm::vec4(r, g, b, a));
 }
 
 void Renderer::recreateSwapchain()

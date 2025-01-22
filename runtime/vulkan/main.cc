@@ -29,7 +29,7 @@ int main()
     spear::rendering::vulkan::Renderer renderer(window);
     renderer.init();
     renderer.setViewPort(w_size.x, w_size.y);
-    renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
+    renderer.setBackgroundColor(0.5f, 0.2f, 0.2f, 1.0f);
 
     // Texture creation.
     auto default_size = glm::vec3(1.0f, 1.0f, 1.0f);

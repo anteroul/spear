@@ -26,10 +26,7 @@ public:
 
     void render() override;
     void setViewPort(int width, int height) override;
-
-    void setBackgroundColor(float r, float g, float b, float a) override
-    {
-    }
+    void setBackgroundColor(float r, float g, float b, float a) override;
     void init() override;
 
     void drawFrame();
