@@ -34,10 +34,16 @@ public:
     {
         return m_extent;
     }
+    void setExtent(int width, int height)
+    {
+        m_extent.width = width;
+        m_extent.height = height;
+    }
+
     void recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const VulkanWindow& window);
+    void createImageViews(VkDevice device);
 
 private:
-    void createImageViews(VkDevice device);
     bool isSwapchainSupported(VkPhysicalDevice physicalDevice);
     VkSurfaceCapabilitiesKHR querySurfaceCapabilities(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, int width, int height);

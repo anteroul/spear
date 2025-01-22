@@ -25,9 +25,7 @@ public:
     ~Renderer();
 
     void render() override;
-    void setViewPort(int width, int height) override
-    {
-    }
+    void setViewPort(int width, int height) override;
 
     void setBackgroundColor(float r, float g, float b, float a) override
     {
@@ -37,9 +35,11 @@ public:
     void drawFrame();
 
 private:
+    void cleanSwapchain();
     void cleanup();
     VkInstance createInstance();
     VkSurfaceKHR createSurface();
+    void recreateSwapchain();
 
 private:
     DeviceManager m_deviceManager;

@@ -1,7 +1,9 @@
 #include <spear/time.hh>
 
 #include <SDL3/SDL_timer.h>
+
 #include <algorithm>
+#include <iostream>
 
 namespace spear
 {

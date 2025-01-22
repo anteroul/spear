@@ -41,8 +41,10 @@ int main()
     spear::EventHandler eventHandler;
 
     eventHandler.handleInput(SDLK_ESCAPE, [](){
+        std::cout << "Escape pressed!" << std::endl;
         exit(0);
     });
+
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
                                   { std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl; });
 
@@ -85,14 +87,14 @@ int main()
         float delta_time = time_interface.getDeltaTime();
         time_interface.updateFromMain(delta_time);
 
+        // Event handling.
+        eventHandler.handleEvents(movement_controller, delta_time);
+
         // Rendering.
         renderer.render();
 
         // Update object's in scene.
         current_scene->update(camera);
-
-        // Event handling.
-        eventHandler.handleEvents(movement_controller, delta_time);
 
         // Update SDL_Window.
         window.update();
