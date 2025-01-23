@@ -20,11 +20,19 @@ void Synchronization::initialize(VkDevice device, size_t maxFramesInFlight)
 
     for (size_t i = 0; i < maxFramesInFlight; ++i)
     {
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS)
         {
-            throw std::runtime_error("Failed to create synchronization objects!");
+            throw std::runtime_error("Failed to create image available semaphore!");
+        }
+
+        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create render finished semaphore!");
+        }
+
+        if (vkCreateFence(device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create in-flight fence!");
         }
     }
     std::cout << "Synchronization objects created successfully!" << std::endl;

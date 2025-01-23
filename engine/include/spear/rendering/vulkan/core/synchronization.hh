@@ -22,7 +22,7 @@ public:
     {
         return m_renderFinishedSemaphores[index];
     }
-    VkFence getInFlightFence(size_t index) const
+    VkFence& getInFlightFence(size_t index)
     {
         return m_inFlightFences[index];
     }

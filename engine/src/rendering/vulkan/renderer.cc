@@ -58,8 +58,20 @@ void Renderer::drawFrame()
     VkQueue presentQueue = m_deviceManager.getPresentQueue();
 
     auto fence = m_synchronization.getInFlightFence(m_currentFrame);
-    vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &fence);
+
+    VkResult waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+    if (waitResult != VK_SUCCESS)
+    {
+        std::cerr << "Failed to wait for fence! Error code: " << waitResult << std::endl;
+        return;
+    }
+
+    VkResult resetResult = vkResetFences(device, 1, &fence);
+    if (resetResult != VK_SUCCESS)
+    {
+        std::cerr << "Failed to reset fence! Error code: " << resetResult << std::endl;
+        return;
+    }
 
     // Acquire an image from the swap chain
     uint32_t imageIndex;
@@ -70,31 +82,34 @@ void Renderer::drawFrame()
                                             VK_NULL_HANDLE,
                                             &imageIndex);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
     {
-        try
-        {
-            recreateSwapchain();
-        }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Swapchain recreation failed: " << e.what() << std::endl;
-        }
+        recreateSwapchain();
         std::cout << "Recreated swap chain" << std::endl;
         return;
     }
-    else if (result == VK_SUBOPTIMAL_KHR)
+    else if (result == VK_ERROR_DEVICE_LOST)
     {
-        std::cout << "VK_SUBOPTIMAL_KHR: Swapchain is suboptimal, but rendering will proceed." << std::endl;
+        throw std::runtime_error("Device lost during vkAcquireNextImageKHR!");
     }
     else if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to acquire swap chain image!");
     }
 
+    VkCommandBuffer commandBuffer = m_commandBufferManager.getCommandBuffers()[imageIndex];
+    if (commandBuffer == VK_NULL_HANDLE)
+    {
+        throw std::runtime_error("Command buffer is null!");
+    }
+    if (vkResetCommandBuffer(commandBuffer, 0) != VK_SUCCESS)
+    {
+        std::cerr << "Failed to reset command buffer!" << std::endl;
+        return;
+    }
+
     // Record command buffer
     m_commandBufferManager.beginCommandBuffer(imageIndex);
-    VkCommandBuffer commandBuffer = m_commandBufferManager.getCommandBuffers()[imageIndex];
     if (commandBuffer == VK_NULL_HANDLE)
     {
         std::cerr << "Command buffer is null" << std::endl;
@@ -167,7 +182,7 @@ void Renderer::drawFrame()
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, m_synchronization.getInFlightFence(m_currentFrame)) != VK_SUCCESS)
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to submit draw command buffer!");
     }
@@ -199,24 +214,27 @@ void Renderer::drawFrame()
 
 void Renderer::cleanSwapchain()
 {
-    vkDeviceWaitIdle(m_deviceManager.getDevice());
-    m_frameBufferManager.cleanup(m_deviceManager.getDevice());
+    auto device = m_deviceManager.getDevice();
+    vkDeviceWaitIdle(device);
+    m_frameBufferManager.cleanup(device);
     m_commandBufferManager.cleanup();
-    m_swapchain.cleanup(m_deviceManager.getDevice());
+    m_swapchain.cleanup(device);
+    m_synchronization.cleanup(device);
 }
 
 void Renderer::cleanup()
 {
     cleanSwapchain();
-    m_synchronization.cleanup(m_deviceManager.getDevice());
-    m_pipelineManager.cleanup(m_deviceManager.getDevice());
-    m_renderPassManager.cleanup(m_deviceManager.getDevice());
+    auto device = m_deviceManager.getDevice();
+    m_synchronization.cleanup(device);
+    m_pipelineManager.cleanup(device);
+    m_renderPassManager.cleanup(device);
     m_deviceManager.cleanup();
 }
 
 void Renderer::setViewPort(int width, int height)
 {
-    m_swapchain.setExtent(width, height);
+    // m_swapchain.setExtent(width, height);
 
     // Update the viewport.
     VkViewport viewport = {};
@@ -269,12 +287,44 @@ void Renderer::recreateSwapchain()
     const auto& vulkan_window = *dynamic_cast<const VulkanWindow*>(&BaseRenderer::getWindow());
     auto window_size = vulkan_window.getSize();
     std::cout << "New size x: " << window_size.x << " y: " << window_size.y << std::endl;
+    auto device = m_deviceManager.getDevice();
 
-    m_swapchain.recreate(m_deviceManager.getPhysicalDevice(), m_deviceManager.getDevice(), m_surface, vulkan_window);
-    m_swapchain.createImageViews(m_deviceManager.getDevice());
+    m_swapchain.recreate(m_deviceManager.getPhysicalDevice(), device, m_surface, window_size.x, window_size.y);
     setViewPort(window_size.x, window_size.y);
-    m_frameBufferManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_swapchain.getExtent());
-    m_commandBufferManager.initialize(m_deviceManager.getDevice(), m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
+    m_frameBufferManager.initialize(device, m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_swapchain.getExtent());
+    m_commandBufferManager.initialize(device, m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
+    m_synchronization.initialize(device, m_framesInFlight);
+
+    /*
+    auto commandBuffers = m_commandBufferManager.getCommandBuffers();
+    for (size_t i = 0; i < commandBuffers.size(); ++i)
+    {
+        VkFence& fence = m_synchronization.getInFlightFence(i);
+
+        if (fence == VK_NULL_HANDLE)
+        {
+            throw std::runtime_error("Fence is invalid!");
+        }
+
+        VkResult waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+        if (waitResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to wait for fence!");
+        }
+
+        VkResult resetResult = vkResetFences(device, 1, &fence);
+        if (resetResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to reset fence!");
+        }
+
+        VkResult cmdResetResult = vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+        if (cmdResetResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to reset command buffer!");
+        }
+    }
+    */
 }
 
 } // namespace spear::rendering::vulkan

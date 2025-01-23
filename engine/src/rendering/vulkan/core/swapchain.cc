@@ -1,7 +1,6 @@
 #include <spear/rendering/vulkan/core/swapchain.hh>
 
 #include <algorithm>
-#include <cstring>
 #include <iostream>
 
 namespace spear::rendering::vulkan
@@ -201,14 +200,11 @@ void Swapchain::cleanup(VkDevice device)
     }
 }
 
-void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const VulkanWindow& window)
+void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, int width, int height)
 {
     vkDeviceWaitIdle(device);
-
     cleanup(device);
-
-    auto window_size = window.getSize();
-    initialize(device, physicalDevice, surface, window_size.x, window_size.y);
+    initialize(device, physicalDevice, surface, width, height);
 }
 
 } // namespace spear::rendering::vulkan

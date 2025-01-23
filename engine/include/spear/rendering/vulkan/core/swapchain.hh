@@ -34,13 +34,8 @@ public:
     {
         return m_extent;
     }
-    void setExtent(int width, int height)
-    {
-        m_extent.width = width;
-        m_extent.height = height;
-    }
 
-    void recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const VulkanWindow& window);
+    void recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, int width, int height);
     void createImageViews(VkDevice device);
 
 private:
