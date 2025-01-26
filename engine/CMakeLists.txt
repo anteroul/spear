@@ -95,6 +95,10 @@ set(SOURCES
     src/rendering/vulkan/core/device_manager.cc
     src/rendering/vulkan/core/pipeline_manager.cc
     src/rendering/vulkan/core/swapchain.cc
+
+    # Rendering Vulkan Texture
+    src/rendering/vulkan/texture/texture.cc
+    src/rendering/vulkan/texture/stb_texture.cc
 )
 
 message(STATUS "Bullet include dirs: ${BULLET_INCLUDE_DIRS}")

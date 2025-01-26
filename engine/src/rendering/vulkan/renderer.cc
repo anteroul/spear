@@ -215,11 +215,9 @@ void Renderer::drawFrame()
 void Renderer::cleanSwapchain()
 {
     auto device = m_deviceManager.getDevice();
-    vkDeviceWaitIdle(device);
     m_frameBufferManager.cleanup(device);
     m_commandBufferManager.cleanup();
     m_swapchain.cleanup(device);
-    m_synchronization.cleanup(device);
 }
 
 void Renderer::cleanup()
@@ -234,8 +232,6 @@ void Renderer::cleanup()
 
 void Renderer::setViewPort(int width, int height)
 {
-    // m_swapchain.setExtent(width, height);
-
     // Update the viewport.
     VkViewport viewport = {};
     viewport.x = 0.0f;
@@ -283,33 +279,50 @@ void Renderer::setBackgroundColor(float r, float g, float b, float a)
 
 void Renderer::recreateSwapchain()
 {
+    auto device = m_deviceManager.getDevice();
+    vkDeviceWaitIdle(device);
     cleanSwapchain();
     const auto& vulkan_window = *dynamic_cast<const VulkanWindow*>(&BaseRenderer::getWindow());
     auto window_size = vulkan_window.getSize();
     std::cout << "New size x: " << window_size.x << " y: " << window_size.y << std::endl;
-    auto device = m_deviceManager.getDevice();
 
     m_swapchain.recreate(m_deviceManager.getPhysicalDevice(), device, m_surface, window_size.x, window_size.y);
     setViewPort(window_size.x, window_size.y);
     m_frameBufferManager.initialize(device, m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_swapchain.getExtent());
     m_commandBufferManager.initialize(device, m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
+
+    m_synchronization.cleanup(device);
     m_synchronization.initialize(device, m_framesInFlight);
 
-    /*
+    auto imageCount = m_swapchain.getImageCount();
+    std::cout << "image count: " << imageCount << std::endl;
     auto commandBuffers = m_commandBufferManager.getCommandBuffers();
-    for (size_t i = 0; i < commandBuffers.size(); ++i)
+    for (size_t i = 0; i < 3; ++i)
     {
-        VkFence& fence = m_synchronization.getInFlightFence(i);
+        assert(commandBuffers[i] != VK_NULL_HANDLE && "Command buffer is not properly initialized!");
+        VkFence& fence = m_synchronization.getInFlightFence(i % m_framesInFlight);
 
         if (fence == VK_NULL_HANDLE)
         {
             throw std::runtime_error("Fence is invalid!");
         }
 
-        VkResult waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
-        if (waitResult != VK_SUCCESS)
+        // Check if the fence is signaled before waiting
+        VkResult fenceStatus = vkGetFenceStatus(device, fence);
+        if (fenceStatus == VK_NOT_READY)
         {
-            throw std::runtime_error("Failed to wait for fence!");
+            std::cout << "Waiting for fence: " << i << std::endl;
+            // Fence is not yet signaled, so wait for it
+            VkResult waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+            if (waitResult != VK_SUCCESS)
+            {
+                throw std::runtime_error("Failed to wait for fence!");
+            }
+            std::cout << "Fence wait result: " << waitResult << std::endl;
+        }
+        else if (fenceStatus != VK_SUCCESS)
+        {
+            throw std::runtime_error("Fence status query failed!");
         }
 
         VkResult resetResult = vkResetFences(device, 1, &fence);
@@ -324,7 +337,45 @@ void Renderer::recreateSwapchain()
             throw std::runtime_error("Failed to reset command buffer!");
         }
     }
-    */
+
+    for (size_t i = 0; i < commandBuffers.size(); ++i)
+    {
+        VkFence& fence = m_synchronization.getInFlightFence(i % m_framesInFlight);
+
+        // Ensure fence is signaled
+        VkResult fenceStatus = vkGetFenceStatus(device, fence);
+        if (fenceStatus != VK_SUCCESS)
+        {
+            VkResult waitResult = vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX);
+            if (waitResult != VK_SUCCESS)
+            {
+                throw std::runtime_error("Failed to wait for fence!");
+            }
+        }
+
+        // Reset the fence
+        VkResult resetResult = vkResetFences(device, 1, &fence);
+        if (resetResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to reset fence!");
+        }
+
+        // Reset and re-record the command buffer
+        VkResult cmdResetResult = vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+        if (cmdResetResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to reset command buffer!");
+        }
+
+        // Begin command buffer recording (ensure no pending state)
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        VkResult cmdBeginResult = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
+        if (cmdBeginResult != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to begin command buffer!");
+        }
+    }
 }
 
 } // namespace spear::rendering::vulkan

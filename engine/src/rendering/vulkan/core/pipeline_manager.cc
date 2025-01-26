@@ -218,6 +218,7 @@ void PipelineManager::cleanup(VkDevice device)
     if (m_graphicsPipeline != VK_NULL_HANDLE)
     {
         vkDestroyPipeline(device, m_graphicsPipeline, nullptr);
+        m_graphicsPipeline = VK_NULL_HANDLE;
     }
 }
 

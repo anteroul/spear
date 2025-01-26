@@ -36,9 +36,20 @@ public:
     {
         return m_width;
     }
+
     int getHeight() const
     {
         return m_height;
+    }
+
+    void setHeight(float height)
+    {
+        m_height = height;
+    }
+
+    void setWidth(float width)
+    {
+        m_width = width;
     }
 
 protected:

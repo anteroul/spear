@@ -27,8 +27,41 @@ void Swapchain::initialize(VkDevice device, VkPhysicalDevice physicalDevice, VkS
     }
 
     retrieveSwapchainImages(device);
+
+    // Ensure at least 2 images are available
+    if (m_images.size() < 2)
+    {
+        throw std::runtime_error("Swapchain does not have enough images (minimum 2 required).");
+    }
+
     m_imageFormat = surfaceFormat.format;
     createImageViews(device);
+}
+
+void Swapchain::cleanup(VkDevice device)
+{
+    for (auto imageView : m_imageViews)
+    {
+        if (imageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
+    }
+    m_imageViews.clear();
+    m_images.clear();
+
+    if (m_swapchain != VK_NULL_HANDLE)
+    {
+        vkDestroySwapchainKHR(device, m_swapchain, nullptr);
+        m_swapchain = VK_NULL_HANDLE;
+    }
+}
+
+void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, int width, int height)
+{
+    vkDeviceWaitIdle(device);
+    cleanup(device);
+    initialize(device, physicalDevice, surface, width, height);
 }
 
 bool Swapchain::isSwapchainSupported(VkPhysicalDevice physicalDevice)
@@ -127,10 +160,12 @@ VkSwapchainCreateInfoKHR Swapchain::createSwapchainCreateInfo(
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = surface;
     createInfo.minImageCount = capabilities.minImageCount + 1;
+    int minImageCount = capabilities.minImageCount + 1;
     if (capabilities.maxImageCount > 0 && createInfo.minImageCount > capabilities.maxImageCount)
     {
-        createInfo.minImageCount = capabilities.maxImageCount;
+        minImageCount = capabilities.maxImageCount;
     }
+    createInfo.minImageCount = minImageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = extent;
@@ -183,28 +218,6 @@ void Swapchain::createImageViews(VkDevice device)
             throw std::runtime_error("Failed to create image views for swapchain.");
         }
     }
-}
-
-void Swapchain::cleanup(VkDevice device)
-{
-    for (auto imageView : m_imageViews)
-    {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-    m_imageViews.clear();
-
-    if (m_swapchain != VK_NULL_HANDLE)
-    {
-        vkDestroySwapchainKHR(device, m_swapchain, nullptr);
-        m_swapchain = VK_NULL_HANDLE;
-    }
-}
-
-void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, int width, int height)
-{
-    vkDeviceWaitIdle(device);
-    cleanup(device);
-    initialize(device, physicalDevice, surface, width, height);
 }
 
 } // namespace spear::rendering::vulkan
