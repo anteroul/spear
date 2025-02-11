@@ -33,6 +33,7 @@ private:
 
 private:
     uint32_t m_vao;
+    Texture* m_openGLTexture;
 };
 
 } // namespace spear::rendering::opengl

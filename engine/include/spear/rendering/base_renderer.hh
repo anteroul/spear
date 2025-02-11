@@ -3,6 +3,10 @@
 
 #include <spear/window/base_window.hh>
 
+#include <glm/vec4.hpp>
+
+#include <optional>
+
 namespace spear::rendering
 {
 
@@ -28,8 +32,24 @@ protected:
         return m_baseWindow;
     }
 
+    void setBackgroundColor(const glm::vec4& background_color)
+    {
+        m_backgroundColor = background_color;
+    }
+
+    std::optional<glm::vec4> getBackgroundColor() const
+    {
+        return m_backgroundColor;
+    }
+
+    bool hasBackgroundColor() const
+    {
+        return m_backgroundColor.has_value();
+    }
+
 private:
     BaseWindow& m_baseWindow;
+    std::optional<glm::vec4> m_backgroundColor;
 };
 
 } // namespace spear::rendering

@@ -29,7 +29,7 @@ int main()
     spear::rendering::vulkan::Renderer renderer(window);
     renderer.init();
     renderer.setViewPort(w_size.x, w_size.y);
-    renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
+    renderer.setBackgroundColor(0.5f, 0.2f, 0.2f, 1.0f);
 
     // Texture creation.
     auto default_size = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -37,14 +37,22 @@ int main()
     // Scene swapping.
     spear::Time time_interface;
 
+    // clang-format off
     spear::EventHandler eventHandler;
+
+    eventHandler.handleInput(SDLK_ESCAPE, [](){
+        std::cout << "Escape pressed!" << std::endl;
+        exit(0);
+    });
+
     eventHandler.registerCallback(SDL_EVENT_MOUSE_BUTTON_DOWN, [](const SDL_Event& event)
                                   { std::cout << "Mouse button pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl; });
 
     eventHandler.registerCallback(SDL_EVENT_QUIT, [](const SDL_Event&)
-                                  {
+    {
         std::cout << "Quit event received. Exiting..." << std::endl;
-        exit(0); });
+        exit(0);
+    });
 
     // Mouse movement.
     eventHandler.registerCallback(SDL_EVENT_MOUSE_MOTION, [&camera](const SDL_Event& event)
@@ -52,16 +60,16 @@ int main()
 
     // Update window size.
     eventHandler.registerCallback(SDL_EVENT_WINDOW_RESIZED, [&window, &renderer](const SDL_Event&)
-                                  {
+    {
         std::cout << "Window resized!" << std::endl;
         window.resize();
         auto w_size = window.getSize();
-        renderer.setViewPort(w_size.x, w_size.y); });
+        renderer.setViewPort(w_size.x, w_size.y);
+    });
     // clang-format on
 
     auto scene_objects = spear::Scene::Container{};
-    auto scene_function = [](spear::Scene::Container& objects) {
-    };
+    auto scene_function = [](spear::Scene::Container& objects) {};
 
     auto scene_id = spear::createScene(scene_objects, scene_function, scene_manager);
     scene_manager.loadScene(scene_id);
@@ -79,16 +87,16 @@ int main()
         float delta_time = time_interface.getDeltaTime();
         time_interface.updateFromMain(delta_time);
 
+        // Event handling.
+        eventHandler.handleEvents(movement_controller, delta_time);
+
         // Rendering.
         renderer.render();
 
         // Update object's in scene.
         current_scene->update(camera);
 
-        // Event handling.
-        eventHandler.handleEvents(movement_controller, delta_time);
-
-        // Update SDL_Window if using OpenGL.
+        // Update SDL_Window.
         window.update();
 
         time_interface.delay(16); // 60 fps.

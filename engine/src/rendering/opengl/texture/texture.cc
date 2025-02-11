@@ -1,4 +1,3 @@
-#include "spear/rendering/base_texture.hh"
 #include <spear/rendering/opengl/texture/texture.hh>
 
 #include <GL/glew.h>

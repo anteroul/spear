@@ -1,5 +1,7 @@
 #include <spear/event_handler.hh>
 
+#include <iostream>
+
 namespace spear
 {
 

@@ -15,37 +15,12 @@ public:
     VulkanWindow(const std::string& window_name, BaseWindow::Size size);
 
     /// Destructor.
-    ~VulkanWindow();
+    virtual ~VulkanWindow();
 
     void update() override;
 
-    const VkInstance& getVkInstance() const
-    {
-        return m_vkInstance;
-    }
-
-    VkInstance& getVkInstance()
-    {
-        return m_vkInstance;
-    }
-
-    const VkSurfaceKHR& getVkSurface() const
-    {
-        return m_vkSurface;
-    }
-
-    VkSurfaceKHR& getVkSurface()
-    {
-        return m_vkSurface;
-    }
-
-private:
     VkInstance createVulkanInstance();
-    void createVulkanSurface();
-
-private:
-    VkInstance m_vkInstance;
-    VkSurfaceKHR m_vkSurface;
+    VkSurfaceKHR createVulkanSurface(VkInstance instance);
 };
 
 } // namespace spear
