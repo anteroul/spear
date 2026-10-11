@@ -100,6 +100,7 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
 
     // --- Apply vertical movement ---
     camPos = m_camera.getPosition();
+    const float previousHeadY = camPos.y;
     camPos.y += m_verticalVelocity * deltaTime;
     m_camera.setPosition(camPos);
 
@@ -107,7 +108,9 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
     m_onGround = false;
     if (m_physicsWorld)
     {
-        btVector3 rayFrom(camPos.x, camPos.y, camPos.z);
+        // Start at the previous height so a long frame cannot move the eye
+        // below a floor before the ground ray gets a chance to find it.
+        btVector3 rayFrom(camPos.x, std::max(previousHeadY, camPos.y), camPos.z);
         btVector3 rayTo(camPos.x, camPos.y - (m_eyeHeight + 5.0f), camPos.z);
 
         btCollisionWorld::ClosestRayResultCallback cb(rayFrom, rayTo);
