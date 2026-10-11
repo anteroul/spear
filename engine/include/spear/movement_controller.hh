@@ -20,6 +20,12 @@ public:
 
     void processInput(const std::unordered_map<SDL_Keycode, bool>& keyStates, float deltaTime);
 
+    void resetVerticalMotion()
+    {
+        m_verticalVelocity = 0.0f;
+        m_onGround = false;
+    }
+
     void setPhysicsWorld(btDiscreteDynamicsWorld* world)
     {
         m_physicsWorld = world;
