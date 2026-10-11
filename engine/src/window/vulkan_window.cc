@@ -52,10 +52,21 @@ VkInstance VulkanWindow::createVulkanInstance()
     createInfo.enabledLayerCount = 0;
     createInfo.ppEnabledLayerNames = nullptr;
 
-    // Enable validation layers
+    // Enable validation only when the layer is installed.
     const char* validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
-    createInfo.enabledLayerCount = 1;
-    createInfo.ppEnabledLayerNames = validationLayers;
+    uint32_t layerCount = 0;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> layers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, layers.data());
+    for (const auto& layer : layers)
+    {
+        if (std::string(layer.layerName) == validationLayers[0])
+        {
+            createInfo.enabledLayerCount = 1;
+            createInfo.ppEnabledLayerNames = validationLayers;
+            break;
+        }
+    }
 
     VkInstance instance;
     VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
