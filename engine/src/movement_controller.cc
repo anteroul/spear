@@ -25,7 +25,7 @@ std::optional<float> groundYAt(btDiscreteDynamicsWorld& world, float x, float z,
         return std::nullopt;
     return hit.m_hitPointWorld.y();
 }
-}
+} // namespace
 
 MovementController::MovementController(Camera& camera, btDiscreteDynamicsWorld* physicsWorld, float eyeHeight, float gravity, float jumpSpeed)
     : m_camera(camera),
@@ -90,7 +90,7 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
             to.setOrigin(btVector3(targetPos.x, capsuleOriginY(targetPos.y), targetPos.z));
 
             auto sweepCapsule = [this, &capsule](const btTransform& start, const btTransform& end,
-                                                  btCollisionWorld::ClosestConvexResultCallback& result)
+                                                 btCollisionWorld::ClosestConvexResultCallback& result)
             {
                 m_physicsWorld->convexSweepTest(&capsule, start, end, result);
             };
@@ -212,10 +212,11 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
     {
         // Probe the capsule's center and edges. The leading edge can be on a
         // stair while the center is still over the lower tread.
-        const std::array<glm::vec3, 5> probes{{
-                {0.0f, 0.0f, 0.0f},
-                {supportOffset, 0.0f, 0.0f}, {-supportOffset, 0.0f, 0.0f},
-                {0.0f, 0.0f, supportOffset}, {0.0f, 0.0f, -supportOffset}}};
+        const std::array<glm::vec3, 5> probes{{{0.0f, 0.0f, 0.0f},
+                                               {supportOffset, 0.0f, 0.0f},
+                                               {-supportOffset, 0.0f, 0.0f},
+                                               {0.0f, 0.0f, supportOffset},
+                                               {0.0f, 0.0f, -supportOffset}}};
         std::optional<float> ground;
         for (const auto& offset : probes)
         {
@@ -225,7 +226,10 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
                                  camPos.z + offset.z,
                                  std::max(previousHeadY, camPos.y),
                                  camPos.y - m_eyeHeight - maxStepHeight);
-            if (hit && *hit <= previousHeadY - m_eyeHeight + 0.1f &&
+
+            const float allowedRise = wasGrounded ? maxStepHeight + 0.1f : 0.1f;
+            if (hit && *hit <= previousHeadY - m_eyeHeight + allowedRise &&
+
                 (!ground || *hit > *ground))
                 ground = hit;
         }
