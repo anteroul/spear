@@ -24,7 +24,8 @@ public:
     }
 
     /// Process SDL events and call registered callbacks
-    void handleEvents(MovementController& movement_controller, float delta_time);
+    void handleEvents(MovementController& movement_controller, float delta_time,
+                      bool allowMovement = true);
 
     /// Handle custom events from key input (fires on both press and release)
     void handleInput(SDL_Keycode key, const std::function<void()>& callback);

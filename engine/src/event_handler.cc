@@ -6,7 +6,8 @@ namespace spear
 {
 
 /// Process SDL events and call registered callbacks
-void EventHandler::handleEvents(MovementController& movement_controller, float delta_time)
+void EventHandler::handleEvents(MovementController& movement_controller, float delta_time,
+                                bool allowMovement)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -52,7 +53,8 @@ void EventHandler::handleEvents(MovementController& movement_controller, float d
         }
     }
 
-    movement_controller.processInput(keyStates, delta_time);
+    if (allowMovement)
+        movement_controller.processInput(keyStates, delta_time);
 }
 
 void EventHandler::handleInput(SDL_Keycode key, const std::function<void()>& callback)
