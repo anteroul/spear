@@ -27,6 +27,12 @@ set(SPEAR_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cc")
 
+# MSYS2's BulletConfig.cmake yields a prefix-relative include path.
+find_path(NX3D_BULLET_INCLUDE_DIR btBulletDynamicsCommon.h PATH_SUFFIXES bullet include/bullet)
+if(NX3D_BULLET_INCLUDE_DIR)
+    set(BULLET_INCLUDE_DIRS "${NX3D_BULLET_INCLUDE_DIR}")
+endif()
+
 message(STATUS "Bullet include dirs: ${BULLET_INCLUDE_DIRS}")
 message(STATUS "Bullet libraries: ${BULLET_LIBRARIES}")
 
