@@ -35,7 +35,8 @@ Sprite3D::Sprite3D(VkDevice device,
                    physics::bullet::ObjectData&& object_data)
     : BaseSprite3D(texture, nullptr, std::move(object_data)),
       m_vkTexture(std::move(texture)),
-      m_device(device)
+      m_device(device),
+      m_descriptorPool(descriptorPool)
 {
     createVertexBuffer(physDevice);
 
@@ -65,11 +66,12 @@ Sprite3D::Sprite3D(VkDevice device,
 
 Sprite3D::~Sprite3D()
 {
+    if (m_descriptorSet != VK_NULL_HANDLE)
+        vkFreeDescriptorSets(m_device, m_descriptorPool, 1, &m_descriptorSet);
     if (m_vertexBuffer != VK_NULL_HANDLE)
         vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
     if (m_vertexMemory != VK_NULL_HANDLE)
         vkFreeMemory(m_device, m_vertexMemory, nullptr);
-    // Descriptor set freed implicitly when the pool is reset/destroyed.
 }
 
 void Sprite3D::render(Camera& camera)

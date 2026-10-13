@@ -18,6 +18,7 @@ TexturedCube::TexturedCube(VkDevice device,
                            const glm::vec4& color)
     : Cube(device, physDevice, std::move(object_data), color),
       Texture(),
+      m_descriptorPool(descriptorPool),
       m_texture(std::move(texture))
 {
     // Initialize the Texture base with the logical device.
@@ -34,9 +35,9 @@ TexturedCube::TexturedCube(VkDevice device,
 
 TexturedCube::~TexturedCube()
 {
-    // m_vertexBuffer / m_vertexMemory — freed by ~Cube().
-    // Texture image objects — Texture base has VK_NULL_HANDLE (not owned), safe.
-    // Descriptor set — freed implicitly when the pool is reset/destroyed.
+    if (m_descriptorSet != VK_NULL_HANDLE)
+        vkFreeDescriptorSets(Texture::m_device, m_descriptorPool, 1, &m_descriptorSet);
+    m_descriptorSet = VK_NULL_HANDLE;
 }
 
 void TexturedCube::render(Camera& camera)

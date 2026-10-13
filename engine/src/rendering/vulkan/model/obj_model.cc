@@ -56,11 +56,13 @@ OBJModel::~OBJModel()
 {
     for (auto& mat : m_materialData)
     {
+        if (mat.descriptorSet != VK_NULL_HANDLE)
+            vkFreeDescriptorSets(m_device, m_descriptorPool, 1, &mat.descriptorSet);
         if (mat.vertexBuffer != VK_NULL_HANDLE)
             vkDestroyBuffer(m_device, mat.vertexBuffer, nullptr);
         if (mat.vertexMemory != VK_NULL_HANDLE)
             vkFreeMemory(m_device, mat.vertexMemory, nullptr);
-        // Texture shared_ptr and descriptor sets are freed automatically.
+        // Texture shared_ptr releases the material texture.
     }
 }
 
@@ -219,7 +221,9 @@ std::vector<OBJModel::Vertex> OBJModel::buildVertices(const std::vector<ModelLoa
             if (!uvs.empty() && i < face.textureCoordIndices.size())
             {
                 int ti = face.textureCoordIndices[i];
-                v.uv = {uvs[ti].u, uvs[ti].v};
+                // OBJ texture coordinates start at the image's lower left;
+                // STB uploads rows starting at the upper left.
+                v.uv = {uvs[ti].u, 1.0f - uvs[ti].v};
             }
 
             tri.push_back(v);

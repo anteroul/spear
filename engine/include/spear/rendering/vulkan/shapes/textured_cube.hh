@@ -50,6 +50,7 @@ public:
     }
 
 private:
+    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
     struct Vertex
     {
         glm::vec3 position;

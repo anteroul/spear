@@ -24,6 +24,8 @@ Quad2D::Quad2D(VkDevice device,
 
 Quad2D::~Quad2D()
 {
+    if (m_descriptorSet != VK_NULL_HANDLE)
+        vkFreeDescriptorSets(m_device, m_descriptorPool, 1, &m_descriptorSet);
     if (m_vertexBuffer != VK_NULL_HANDLE)
         vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
     if (m_vertexMemory != VK_NULL_HANDLE)
@@ -52,6 +54,8 @@ Quad2D& Quad2D::operator=(Quad2D&& other) noexcept
 {
     if (this != &other)
     {
+        if (m_descriptorSet != VK_NULL_HANDLE)
+            vkFreeDescriptorSets(m_device, m_descriptorPool, 1, &m_descriptorSet);
         if (m_vertexBuffer != VK_NULL_HANDLE)
             vkDestroyBuffer(m_device, m_vertexBuffer, nullptr);
         if (m_vertexMemory != VK_NULL_HANDLE)

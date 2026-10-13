@@ -53,6 +53,7 @@ private:
     std::shared_ptr<vulkan::Texture> m_vkTexture;
 
     VkDevice m_device = VK_NULL_HANDLE;
+    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
     VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
     VkDeviceMemory m_vertexMemory = VK_NULL_HANDLE;
     uint32_t m_vertexCount = 0;
