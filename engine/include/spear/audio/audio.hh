@@ -113,6 +113,10 @@ public:
     /// Set the clip volume (0.0 = silent, 1.0 = full). Applied to all voices.
     void setVolume(float volume);
 
+    /// Set the distance where spatial gain is halved and the cutoff distance.
+    /// Non-spatial playback and the listener's master volume are unaffected.
+    void setSpatialRange(float referenceDistance, float maxDistance);
+
     float getVolume() const
     {
         return m_volume;
@@ -140,6 +144,8 @@ private:
     std::vector<Voice> m_voices;
     std::size_t m_nextVoice = 0;
     float m_volume = 1.0f;
+    float m_referenceDistance = 300.0f;
+    float m_maxDistance = 2500.0f;
 };
 
 } // namespace spear::audio

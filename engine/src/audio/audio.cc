@@ -21,8 +21,6 @@ constexpr int kDecodeChunkBytes = 8192;
 
 // Spatial audio tuning. Distances are in engine units (a de_dust2 map spans
 // thousands of units, players are ~20 unit cubes).
-constexpr float kReferenceDistance = 300.0f; // distance at which gain halves
-constexpr float kMaxDistance = 2500.0f;      // beyond this sounds are skipped
 constexpr float kMinAudibleGain = 0.02f;     // below this gain skip the play
 
 bool isWavFile(const std::string& filepath)
@@ -278,12 +276,12 @@ void Sound::applySpatial(Voice& voice, const glm::vec3& position, float duration
     const float distSq = glm::dot(dir, dir);
     const float dist = std::sqrt(distSq);
 
-    if (dist > kMaxDistance)
+    if (dist > m_maxDistance)
         return;
 
     // Inverse-square-ish rolloff: 1.0 at the ear, half at the reference
     // distance, then a fast decay (muffled by distance, inaudible far away).
-    const float attenuation = 1.0f / (1.0f + (dist / kReferenceDistance) * (dist / kReferenceDistance));
+    const float attenuation = 1.0f / (1.0f + (dist / m_referenceDistance) * (dist / m_referenceDistance));
 
     // Equal-power pan across the stereo field: right = dot(direction, right).
     float leftGain = 1.0f;
@@ -429,6 +427,16 @@ void Sound::setVolume(float volume)
             SDL_SetAudioStreamGain(voice.streamL, m_volume * voice.lastGainL);
         if (voice.streamR)
             SDL_SetAudioStreamGain(voice.streamR, m_volume * voice.lastGainR);
+    }
+}
+
+void Sound::setSpatialRange(float referenceDistance, float maxDistance)
+{
+    if (std::isfinite(referenceDistance) && std::isfinite(maxDistance) &&
+        referenceDistance > 0.0f && maxDistance >= referenceDistance)
+    {
+        m_referenceDistance = referenceDistance;
+        m_maxDistance = maxDistance;
     }
 }
 
