@@ -34,7 +34,38 @@ glm::mat4 Camera::getViewMatrix() const
 glm::mat4 Camera::getProjectionMatrix() const
 {
     std::shared_lock lock(m_mutex);
-    return glm::perspective(glm::radians(m_fov), ASPECT_RATIO, 1.0f, 10000.0f);
+    return glm::perspective(glm::radians(m_fov), m_aspectRatio, 1.0f, 10000.0f);
+}
+
+void Camera::setFov(float degrees)
+{
+    std::unique_lock lock(m_mutex);
+    m_fov = std::clamp(degrees, 40.0f, 110.0f);
+}
+
+float Camera::getFov() const
+{
+    std::shared_lock lock(m_mutex);
+    return m_fov;
+}
+
+void Camera::setAspectRatio(float ratio)
+{
+    if (ratio <= 0.0f) return;
+    std::unique_lock lock(m_mutex);
+    m_aspectRatio = ratio;
+}
+
+void Camera::setMouseSensitivity(float sensitivity)
+{
+    std::unique_lock lock(m_mutex);
+    m_mouseSensitivity = std::clamp(sensitivity, 0.02f, 1.0f);
+}
+
+float Camera::getMouseSensitivity() const
+{
+    std::shared_lock lock(m_mutex);
+    return m_mouseSensitivity;
 }
 
 glm::vec3 Camera::getPosition() const

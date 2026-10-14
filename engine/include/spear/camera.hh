@@ -13,7 +13,6 @@ namespace spear
 class Camera
 {
 public:
-    const float ASPECT_RATIO = 16.f / 9.f;
 
     /// Constructor.
     Camera(glm::vec3 position = glm::vec3(0.f, 0.f, 0.f),
@@ -73,6 +72,11 @@ public:
 
     // Zoom fov.
     void zoom(float y_offset);
+    void setFov(float degrees);
+    float getFov() const;
+    void setAspectRatio(float ratio);
+    void setMouseSensitivity(float sensitivity);
+    float getMouseSensitivity() const;
 
     void setPosition(const glm::vec3& newPosition);
 
@@ -107,6 +111,7 @@ private:
     float m_movementSpeed;
     float m_mouseSensitivity;
     float m_fov;
+    float m_aspectRatio = 16.f / 9.f;
 
     // Aim punch offsets (degrees). Positive pitch kicks the view upward.
     float m_recoilPitch = 0.0f;
