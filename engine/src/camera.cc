@@ -51,7 +51,8 @@ float Camera::getFov() const
 
 void Camera::setAspectRatio(float ratio)
 {
-    if (ratio <= 0.0f) return;
+    if (ratio <= 0.0f)
+        return;
     std::unique_lock lock(m_mutex);
     m_aspectRatio = ratio;
 }

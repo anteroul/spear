@@ -21,7 +21,7 @@ constexpr int kDecodeChunkBytes = 8192;
 
 // Spatial audio tuning. Distances are in engine units (a de_dust2 map spans
 // thousands of units, players are ~20 unit cubes).
-constexpr float kMinAudibleGain = 0.02f;     // below this gain skip the play
+constexpr float kMinAudibleGain = 0.02f; // below this gain skip the play
 
 bool isWavFile(const std::string& filepath)
 {

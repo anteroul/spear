@@ -13,7 +13,6 @@ namespace spear
 class Camera
 {
 public:
-
     /// Constructor.
     Camera(glm::vec3 position = glm::vec3(0.f, 0.f, 0.f),
            glm::vec3 up = glm::vec3(0.f, 1.f, 0.f),
