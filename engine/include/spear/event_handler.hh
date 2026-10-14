@@ -35,6 +35,11 @@ public:
 
     /// Reset all tracked movement key states.
     void clearMovementKeys();
+    bool movementKeyDown(SDL_Keycode key) const
+    {
+        const auto it = keyStates.find(key);
+        return it != keyStates.end() && it->second;
+    }
 
     /// Check if the application is still running
     bool isRunning() const
