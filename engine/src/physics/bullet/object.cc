@@ -29,7 +29,9 @@ Object::Object(ObjectData&& object_data)
     // Rigid body.
     btRigidBody::btRigidBodyConstructionInfo rbInfo(object_data.getMass(), m_motionState.get(), m_collisionShape.get(), localInertia);
     m_rigidBody = std::make_unique<btRigidBody>(rbInfo);
-    m_dynamicsWorld->addRigidBody(m_rigidBody.get());
+    // Render-only objects do not need to participate in a physics world.
+    if (m_dynamicsWorld)
+        m_dynamicsWorld->addRigidBody(m_rigidBody.get());
 
     // Sync the render transform with the initial physics position.
     auto pos = object_data.getPosition();

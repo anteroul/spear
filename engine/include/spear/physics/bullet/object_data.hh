@@ -13,7 +13,7 @@ namespace spear::physics::bullet
 class ObjectData
 {
 public:
-    /// Constructor.
+    /// Constructor. A null world creates a render-only object.
     ObjectData(std::shared_ptr<btDiscreteDynamicsWorld> world, float mass, glm::vec3 position, glm::vec3 size);
 
     /// Move constructor.
