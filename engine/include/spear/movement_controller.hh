@@ -19,6 +19,9 @@ public:
     MovementController(Camera& camera, btDiscreteDynamicsWorld* physicsWorld = nullptr, float eyeHeight = 3.0f, float gravity = -800.0f, float jumpSpeed = 252.0f);
 
     void processInput(const std::unordered_map<SDL_Keycode, bool>& keyStates, float deltaTime);
+    void setMovementModifiers(float crouchEyeHeight, float crouchSpeedScale,
+                              float silentWalkSpeedScale);
+    void resetStance();
 
     void resetVerticalMotion()
     {
@@ -34,6 +37,10 @@ public:
     {
         return m_onGround;
     }
+    bool isCrouched() const
+    {
+        return m_crouched;
+    }
     float getVerticalVelocity() const
     {
         return m_verticalVelocity;
@@ -45,6 +52,11 @@ private:
     float m_verticalVelocity = 0.0f;
     bool m_onGround = true;
     float m_eyeHeight;
+    float m_currentEyeHeight;
+    float m_crouchEyeHeight = 0.0f;
+    float m_crouchSpeedScale = 1.0f;
+    float m_silentWalkSpeedScale = 1.0f;
+    bool m_crouched = false;
     float m_gravity;
     float m_jumpSpeed;
     std::unordered_map<SDL_Keycode, bool> m_prevKeyStates;

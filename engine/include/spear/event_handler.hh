@@ -56,7 +56,7 @@ public:
 private:
     std::unordered_map<uint32_t, EventCallback> callbacks;
     std::unordered_map<SDL_Keycode, bool> keyStates = {
-            {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}};
+            {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}, {SDLK_LSHIFT, false}, {SDLK_RSHIFT, false}, {SDLK_LCTRL, false}, {SDLK_RCTRL, false}};
     bool running = true;
     std::vector<std::pair<SDL_Keycode, std::function<void()>>> m_inputKeys;
     std::vector<std::pair<SDL_Keycode, std::function<void()>>> m_keyPressedCallbacks;

@@ -14,6 +14,18 @@ namespace
 constexpr float kGroundNormalY = 0.65f;
 constexpr float kCollisionMargin = 0.01f;
 
+struct ContactCheck : btCollisionWorld::ContactResultCallback
+{
+    bool blocked = false;
+
+    btScalar addSingleResult(btManifoldPoint&, const btCollisionObjectWrapper*, int, int,
+                             const btCollisionObjectWrapper*, int, int) override
+    {
+        blocked = true;
+        return 0.0f;
+    }
+};
+
 std::optional<float> groundYAt(btDiscreteDynamicsWorld& world, float x, float z,
                                float fromY, float toY)
 {
@@ -31,6 +43,7 @@ MovementController::MovementController(Camera& camera, btDiscreteDynamicsWorld* 
     : m_camera(camera),
       m_physicsWorld(physicsWorld),
       m_eyeHeight(eyeHeight),
+      m_currentEyeHeight(eyeHeight),
       m_gravity(gravity),
       m_jumpSpeed(jumpSpeed)
 {
@@ -38,8 +51,68 @@ MovementController::MovementController(Camera& camera, btDiscreteDynamicsWorld* 
             {SDLK_W, false}, {SDLK_S, false}, {SDLK_A, false}, {SDLK_D, false}, {SDLK_SPACE, false}};
 }
 
+void MovementController::setMovementModifiers(float crouchEyeHeight, float crouchSpeedScale,
+                                              float silentWalkSpeedScale)
+{
+    m_crouchEyeHeight = std::clamp(crouchEyeHeight, 0.0f, m_eyeHeight);
+    m_crouchSpeedScale = std::clamp(crouchSpeedScale, 0.0f, 1.0f);
+    m_silentWalkSpeedScale = std::clamp(silentWalkSpeedScale, 0.0f, 1.0f);
+}
+
+void MovementController::resetStance()
+{
+    m_crouched = false;
+    m_currentEyeHeight = m_eyeHeight;
+}
+
 void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool>& keyStates, float deltaTime)
 {
+    auto keyDown = [&keyStates](SDL_Keycode key)
+    {
+        const auto it = keyStates.find(key);
+        return it != keyStates.end() && it->second;
+    };
+    const bool crouchRequested = keyDown(SDLK_LCTRL) || keyDown(SDLK_RCTRL);
+    const bool silentWalk = keyDown(SDLK_LSHIFT) || keyDown(SDLK_RSHIFT);
+    if (m_crouchEyeHeight > 0.0f && crouchRequested && !m_crouched)
+    {
+        auto position = m_camera.getPosition();
+        position.y -= m_eyeHeight - m_crouchEyeHeight;
+        m_camera.setPosition(position);
+        m_currentEyeHeight = m_crouchEyeHeight;
+        m_crouched = true;
+    }
+    else if (m_crouched && !crouchRequested)
+    {
+        bool canStand = true;
+        if (m_physicsWorld)
+        {
+            const float radius = m_eyeHeight * 0.12f;
+            const float totalHeight = m_eyeHeight * 0.9f;
+            const float feetY = m_camera.getPosition().y - m_currentEyeHeight;
+            btCapsuleShape capsule(radius, totalHeight - 2.0f * radius);
+            btCollisionObject standing;
+            standing.setCollisionShape(&capsule);
+            btTransform transform;
+            transform.setIdentity();
+            transform.setOrigin(btVector3(m_camera.getPosition().x,
+                                          feetY + m_eyeHeight * 0.15f + totalHeight * 0.5f,
+                                          m_camera.getPosition().z));
+            standing.setWorldTransform(transform);
+            ContactCheck contacts;
+            m_physicsWorld->contactTest(&standing, contacts);
+            canStand = !contacts.blocked;
+        }
+        if (canStand)
+        {
+            auto position = m_camera.getPosition();
+            position.y += m_eyeHeight - m_currentEyeHeight;
+            m_camera.setPosition(position);
+            m_currentEyeHeight = m_eyeHeight;
+            m_crouched = false;
+        }
+    }
+
     // --- Horizontal movement (projected onto XZ plane) ---
     glm::vec3 front = m_camera.getFront();
     glm::vec3 forward = glm::normalize(glm::vec3(front.x, 0.0f, front.z));
@@ -64,22 +137,24 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
     if (glm::length(direction) > 0.0f)
     {
         direction = glm::normalize(direction);
-        glm::vec3 targetPos = camPos + direction * m_camera.getSpeed() * deltaTime;
+        const float speedScale = m_crouched ? m_crouchSpeedScale : silentWalk ? m_silentWalkSpeedScale
+                                                                              : 1.0f;
+        glm::vec3 targetPos = camPos + direction * m_camera.getSpeed() * speedScale * deltaTime;
         targetPos.y = camPos.y;
 
         // --- Horizontal collision check (prevent walking through walls) ---
         if (m_physicsWorld)
         {
-            const float totalHeight = m_eyeHeight * 0.9f;
+            const float totalHeight = m_currentEyeHeight * 0.9f;
             const float halfHeight = totalHeight * 0.5f;
-            const float bottomClearance = m_eyeHeight * 0.15f;
+            const float bottomClearance = m_currentEyeHeight * 0.15f;
 
             // Capsule spanning from slightly above the feet up to the head.
             btCapsuleShape capsule(radius, totalHeight - 2.0f * radius);
 
             auto capsuleOriginY = [this, halfHeight, bottomClearance](float headY)
             {
-                return headY - m_eyeHeight + bottomClearance + halfHeight;
+                return headY - m_currentEyeHeight + bottomClearance + halfHeight;
             };
 
             btTransform from;
@@ -119,7 +194,7 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
                         if (!raisedSweep.hasHit())
                         {
                             const float rayTop = camPos.y + maxStepHeight;
-                            const float rayBottom = camPos.y - m_eyeHeight - 1.0f;
+                            const float rayBottom = camPos.y - m_currentEyeHeight - 1.0f;
                             auto ground = groundYAt(*m_physicsWorld, targetPos.x, targetPos.z,
                                                     rayTop, rayBottom);
                             auto leadingGround = groundYAt(
@@ -131,10 +206,10 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
                                 ground = leadingGround;
                             if (ground)
                             {
-                                const float rise = *ground - (camPos.y - m_eyeHeight);
+                                const float rise = *ground - (camPos.y - m_currentEyeHeight);
                                 if (rise > 0.1f && rise <= maxStepHeight + 0.1f)
                                 {
-                                    targetPos.y = *ground + m_eyeHeight;
+                                    targetPos.y = *ground + m_currentEyeHeight;
                                     m_verticalVelocity = 0.0f;
                                     stepped = true;
                                 }
@@ -187,7 +262,7 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
     bool spaceDown = (spaceIt != keyStates.end()) && spaceIt->second;
     bool spaceWasDown = m_prevKeyStates[SDLK_SPACE];
 
-    if (spaceDown && !spaceWasDown && m_onGround)
+    if (spaceDown && !spaceWasDown && m_onGround && !m_crouched)
     {
         m_verticalVelocity = m_jumpSpeed;
         m_onGround = false;
@@ -225,21 +300,21 @@ void MovementController::processInput(const std::unordered_map<SDL_Keycode, bool
             auto hit = groundYAt(*m_physicsWorld, camPos.x + offset.x,
                                  camPos.z + offset.z,
                                  std::max(previousHeadY, camPos.y),
-                                 camPos.y - m_eyeHeight - maxStepHeight);
+                                 camPos.y - m_currentEyeHeight - maxStepHeight);
 
             const float allowedRise = wasGrounded ? maxStepHeight + 0.1f : 0.1f;
-            if (hit && *hit <= previousHeadY - m_eyeHeight + allowedRise &&
+            if (hit && *hit <= previousHeadY - m_currentEyeHeight + allowedRise &&
 
                 (!ground || *hit > *ground))
                 ground = hit;
         }
 
-        const float feetY = camPos.y - m_eyeHeight;
+        const float feetY = camPos.y - m_currentEyeHeight;
         if (ground && m_verticalVelocity <= 0.0f &&
             (feetY <= *ground + 0.1f ||
              (wasGrounded && feetY - *ground <= maxStepHeight)))
         {
-            camPos.y = *ground + m_eyeHeight;
+            camPos.y = *ground + m_currentEyeHeight;
             m_camera.setPosition(camPos);
             m_verticalVelocity = 0.0f;
             m_onGround = true;
