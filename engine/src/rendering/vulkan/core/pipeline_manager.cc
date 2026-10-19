@@ -15,28 +15,12 @@ namespace spear::rendering::vulkan
 
 void PipelineManager::initialize(VkDevice device, VkRenderPass renderPass, VkExtent2D extent)
 {
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = &uboLayoutBinding;
-
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create descriptor set layout!");
-    }
+    VkDescriptorSetLayout descriptorSetLayout = m_sunLayout;
 
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(glm::mat4);
+    pushConstantRange.size = sizeof(glm::mat4) + sizeof(glm::vec4);
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -231,12 +215,13 @@ void PipelineManager::initializeTextured(VkDevice device,
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(glm::mat4);
+    pushConstantRange.size = sizeof(glm::mat4) + sizeof(glm::vec4);
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    VkDescriptorSetLayout layouts[] = {descriptorSetLayout, m_sunLayout};
+    pipelineLayoutInfo.setLayoutCount = 2;
+    pipelineLayoutInfo.pSetLayouts = layouts;
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
@@ -535,8 +520,101 @@ void PipelineManager::initializeUI(VkDevice device,
     std::cout << "UI graphics pipeline created successfully!" << std::endl;
 }
 
+void PipelineManager::initializeShadow(VkDevice device, VkRenderPass renderPass)
+{
+    VkPushConstantRange push{};
+    push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    push.size = sizeof(glm::mat4);
+    VkPipelineLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layoutInfo.pushConstantRangeCount = 1;
+    layoutInfo.pPushConstantRanges = &push;
+    if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_shadowPipelineLayout) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create shadow pipeline layout");
+
+    auto code = compileGLSLToSPIRV(readGLSLFile(getShaderPath("shadow_vulkan_vertex.glsl")),
+                                   shaderc_vertex_shader);
+    VkShaderModule module = createShaderModule(device, code);
+    VkPipelineShaderStageCreateInfo stage{};
+    stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stage.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    stage.module = module;
+    stage.pName = "main";
+    VkVertexInputAttributeDescription attribute{};
+    attribute.location = 0;
+    attribute.binding = 0;
+    attribute.format = VK_FORMAT_R32G32B32_SFLOAT;
+    VkVertexInputBindingDescription binding{};
+    binding.binding = 0;
+    binding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    VkPipelineVertexInputStateCreateInfo vertex{};
+    vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertex.vertexBindingDescriptionCount = 1;
+    vertex.pVertexBindingDescriptions = &binding;
+    vertex.vertexAttributeDescriptionCount = 1;
+    vertex.pVertexAttributeDescriptions = &attribute;
+    VkPipelineInputAssemblyStateCreateInfo assembly{};
+    assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkViewport viewport{0, 0, 2048, 2048, 0, 1};
+    VkRect2D scissor{{0, 0}, {2048, 2048}};
+    VkPipelineViewportStateCreateInfo viewportState{};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.pViewports = &viewport;
+    viewportState.scissorCount = 1;
+    viewportState.pScissors = &scissor;
+    VkPipelineRasterizationStateCreateInfo raster{};
+    raster.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    raster.polygonMode = VK_POLYGON_MODE_FILL;
+    raster.cullMode = VK_CULL_MODE_NONE;
+    raster.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    raster.lineWidth = 1;
+    raster.depthBiasEnable = VK_TRUE;
+    raster.depthBiasConstantFactor = 1.25f;
+    raster.depthBiasSlopeFactor = 1.75f;
+    VkPipelineMultisampleStateCreateInfo multisample{};
+    multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    VkPipelineDepthStencilStateCreateInfo depth{};
+    depth.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depth.depthTestEnable = VK_TRUE;
+    depth.depthWriteEnable = VK_TRUE;
+    depth.depthCompareOp = VK_COMPARE_OP_LESS;
+    VkPipelineColorBlendStateCreateInfo blend{};
+    blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    VkGraphicsPipelineCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    info.stageCount = 1;
+    info.pStages = &stage;
+    info.pVertexInputState = &vertex;
+    info.pInputAssemblyState = &assembly;
+    info.pViewportState = &viewportState;
+    info.pRasterizationState = &raster;
+    info.pMultisampleState = &multisample;
+    info.pDepthStencilState = &depth;
+    info.pColorBlendState = &blend;
+    info.layout = m_shadowPipelineLayout;
+    info.renderPass = renderPass;
+    binding.stride = sizeof(glm::vec3) * 2;
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &info, nullptr,
+                                  &m_shadowColorPipeline) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create color shadow pipeline");
+    binding.stride = sizeof(glm::vec3) + sizeof(glm::vec2);
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &info, nullptr,
+                                  &m_shadowTexturedPipeline) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create textured shadow pipeline");
+    vkDestroyShaderModule(device, module, nullptr);
+}
+
 void PipelineManager::cleanup(VkDevice device)
 {
+    if (m_shadowColorPipeline) vkDestroyPipeline(device, m_shadowColorPipeline, nullptr);
+    if (m_shadowTexturedPipeline) vkDestroyPipeline(device, m_shadowTexturedPipeline, nullptr);
+    if (m_shadowPipelineLayout) vkDestroyPipelineLayout(device, m_shadowPipelineLayout, nullptr);
+    m_shadowColorPipeline = VK_NULL_HANDLE;
+    m_shadowTexturedPipeline = VK_NULL_HANDLE;
+    m_shadowPipelineLayout = VK_NULL_HANDLE;
     if (m_uiPipeline != VK_NULL_HANDLE)
     {
         vkDestroyPipeline(device, m_uiPipeline, nullptr);

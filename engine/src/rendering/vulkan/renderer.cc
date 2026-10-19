@@ -4,8 +4,11 @@
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 #include <array>
+#include <cstring>
 #include <iostream>
 
 namespace spear::rendering::vulkan
@@ -22,10 +25,15 @@ Renderer::Renderer(VulkanWindow& vulkan_window)
     m_swapchain.initialize(m_deviceManager.getDevice(), m_deviceManager.getPhysicalDevice(), m_surface, window_size.x, window_size.y);
 
     m_depthFormat = findDepthFormat();
+    createSunLayout();
+    createShadowRenderPass();
     createDepthResources(m_swapchain.getExtent());
     m_renderPassManager.initialize(m_deviceManager.getDevice(), m_swapchain.getFormat(), m_depthFormat);
     m_frameBufferManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_depthImageViews, m_swapchain.getExtent());
+    m_pipelineManager.setSunLayout(m_sunLayout);
     m_pipelineManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getExtent());
+    m_pipelineManager.initializeShadow(m_deviceManager.getDevice(), m_shadowRenderPass);
+    createSunResources();
     m_commandBufferManager.initialize(m_deviceManager.getDevice(), m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
     m_synchronization.initialize(m_deviceManager.getDevice(), m_framesInFlight, m_swapchain.getImageCount());
 }
@@ -156,6 +164,48 @@ void Renderer::drawFrame()
     }
     auto extent = m_swapchain.getExtent();
 
+    const glm::vec3 sunDirection = getSunDirection();
+    const glm::vec3 mapCenter(-320.0f, 100.0f, -1120.0f);
+    const glm::mat4 lightViewProjection =
+            glm::orthoRH_ZO(-4200.0f, 4200.0f, -4200.0f, 4200.0f, 1.0f, 14000.0f) *
+            glm::lookAt(mapCenter + sunDirection * 6000.0f, mapCenter,
+                        glm::vec3(0.0f, 1.0f, 0.0f));
+    SunUniform sunUniform{};
+    if (m_camera)
+        sunUniform.inverseViewProjection = glm::inverse(m_camera->getProjectionMatrix() *
+                                                         m_camera->getViewMatrix());
+    sunUniform.lightViewProjection = lightViewProjection;
+    sunUniform.direction = glm::vec4(sunDirection, 0.0f);
+    sunUniform.viewport = glm::vec4(extent.width, extent.height, 0.0f, 0.0f);
+    auto& sunFrame = m_sunFrames[imageIndex];
+    void* uniformData = nullptr;
+    vkMapMemory(device, sunFrame.uniformMemory, 0, sizeof(SunUniform), 0, &uniformData);
+    std::memcpy(uniformData, &sunUniform, sizeof(SunUniform));
+    vkUnmapMemory(device, sunFrame.uniformMemory);
+
+    if (m_camera && m_scene)
+    {
+        VkClearValue shadowClear{};
+        shadowClear.depthStencil = {1.0f, 0};
+        VkRenderPassBeginInfo shadowBegin{};
+        shadowBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        shadowBegin.renderPass = m_shadowRenderPass;
+        shadowBegin.framebuffer = sunFrame.framebuffer;
+        shadowBegin.renderArea.extent = {2048, 2048};
+        shadowBegin.clearValueCount = 1;
+        shadowBegin.pClearValues = &shadowClear;
+        vkCmdBeginRenderPass(commandBuffer, &shadowBegin, VK_SUBPASS_CONTENTS_INLINE);
+        g_frameContext.commandBuffer = commandBuffer;
+        g_frameContext.shadowPass = true;
+        g_frameContext.lightViewProjection = lightViewProjection;
+        g_frameContext.shadowColorPipeline = m_pipelineManager.getShadowColorPipeline();
+        g_frameContext.shadowTexturedPipeline = m_pipelineManager.getShadowTexturedPipeline();
+        g_frameContext.shadowPipelineLayout = m_pipelineManager.getShadowPipelineLayout();
+        m_scene->update(*m_camera);
+        g_frameContext = {};
+        vkCmdEndRenderPass(commandBuffer);
+    }
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = render_pass;
@@ -190,6 +240,7 @@ void Renderer::drawFrame()
         g_frameContext.colorPipelineLayout = m_pipelineManager.getPipelineLayout();
         g_frameContext.texturedPipeline = m_pipelineManager.getTexturedPipeline();
         g_frameContext.texturedPipelineLayout = m_pipelineManager.getTexturedPipelineLayout();
+        g_frameContext.sunDescriptorSet = sunFrame.descriptor;
         g_frameContext.uiPipeline = m_pipelineManager.getUIPipeline();
         g_frameContext.uiPipelineLayout = m_pipelineManager.getUIPipelineLayout();
         m_scene->update(*m_camera);
@@ -262,6 +313,7 @@ void Renderer::cleanSwapchain()
     auto* device = m_deviceManager.getDevice();
     auto* command_pool = m_deviceManager.getCommandPool();
 
+    cleanupSunResources();
     m_frameBufferManager.cleanup(device);
     m_commandBufferManager.cleanup(device, command_pool);
     m_swapchain.cleanup(device);
@@ -274,6 +326,9 @@ void Renderer::cleanup()
     auto* device = m_deviceManager.getDevice();
     m_synchronization.cleanup(device);
     m_pipelineManager.cleanup(device);
+    if (m_shadowRenderPass) vkDestroyRenderPass(device, m_shadowRenderPass, nullptr);
+    if (m_shadowSampler) vkDestroySampler(device, m_shadowSampler, nullptr);
+    if (m_sunLayout) vkDestroyDescriptorSetLayout(device, m_sunLayout, nullptr);
     m_renderPassManager.cleanup(device);
     m_deviceManager.cleanup();
 }
@@ -302,6 +357,8 @@ void Renderer::recreateSwapchain()
     createDepthResources(m_swapchain.getExtent());
     m_pipelineManager.cleanup(device);
     m_pipelineManager.initialize(device, m_renderPassManager.getRenderPass(), m_swapchain.getExtent());
+    m_pipelineManager.initializeShadow(device, m_shadowRenderPass);
+    createSunResources();
     if (m_texturedDescriptorSetLayout != VK_NULL_HANDLE)
         m_pipelineManager.initializeTextured(device, m_renderPassManager.getRenderPass(), m_swapchain.getExtent(), m_texturedDescriptorSetLayout);
     if (m_uiDescriptorSetLayout != VK_NULL_HANDLE)
@@ -322,7 +379,9 @@ VkFormat Renderer::findDepthFormat()
     {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physDevice, format, &props);
-        if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        if ((props.optimalTilingFeatures & (VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                                           VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)) ==
+            (VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
             return format;
     }
     throw std::runtime_error("Failed to find supported depth format!");

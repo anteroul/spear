@@ -2,6 +2,7 @@
 #define SPEAR_RENDERING_VULKAN_FRAME_CONTEXT_HH
 
 #include <vulkan/vulkan.h>
+#include <glm/mat4x4.hpp>
 
 namespace spear::rendering::vulkan
 {
@@ -11,6 +12,13 @@ namespace spear::rendering::vulkan
 struct FrameContext
 {
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+    bool shadowPass = false;
+    bool viewModel = false;
+    glm::mat4 lightViewProjection{1.0f};
+    VkPipeline shadowColorPipeline = VK_NULL_HANDLE;
+    VkPipeline shadowTexturedPipeline = VK_NULL_HANDLE;
+    VkPipelineLayout shadowPipelineLayout = VK_NULL_HANDLE;
+    VkDescriptorSet sunDescriptorSet = VK_NULL_HANDLE;
 
     // Color (untextured) pipeline — used by Cube.
     VkPipeline colorPipeline = VK_NULL_HANDLE;

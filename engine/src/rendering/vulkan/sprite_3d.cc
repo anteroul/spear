@@ -77,15 +77,21 @@ Sprite3D::~Sprite3D()
 void Sprite3D::render(Camera& camera)
 {
     VkCommandBuffer cmd = g_frameContext.commandBuffer;
-    VkPipeline pipeline = g_frameContext.texturedPipeline;
-    VkPipelineLayout layout = g_frameContext.texturedPipelineLayout;
+    VkPipeline pipeline = g_frameContext.shadowPass ? g_frameContext.shadowTexturedPipeline : g_frameContext.texturedPipeline;
+    VkPipelineLayout layout = g_frameContext.shadowPass ? g_frameContext.shadowPipelineLayout : g_frameContext.texturedPipelineLayout;
     if (cmd == VK_NULL_HANDLE || pipeline == VK_NULL_HANDLE || layout == VK_NULL_HANDLE)
         return;
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &m_descriptorSet, 0, nullptr);
+    if (!g_frameContext.shadowPass)
+    {
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &m_descriptorSet, 0, nullptr);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                                &g_frameContext.sunDescriptorSet, 0, nullptr);
+    }
 
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Transform::getModel();
+    glm::mat4 mvp = (g_frameContext.shadowPass ? g_frameContext.lightViewProjection :
+                    camera.getProjectionMatrix() * camera.getViewMatrix()) * Transform::getModel();
 
     VkBuffer buffers[] = {m_vertexBuffer};
     VkDeviceSize offsets[] = {0};
@@ -93,6 +99,12 @@ void Sprite3D::render(Camera& camera)
     vkCmdPushConstants(cmd, layout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                        0, sizeof(glm::mat4), &mvp);
+    if (!g_frameContext.shadowPass)
+    {
+        const glm::vec4 viewModel(0.0f);
+        vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4), sizeof(glm::vec4), &viewModel);
+    }
     vkCmdDraw(cmd, m_vertexCount, 1, 0, 0);
 }
 

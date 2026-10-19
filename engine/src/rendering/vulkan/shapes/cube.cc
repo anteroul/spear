@@ -59,15 +59,21 @@ Cube::~Cube()
 
 void Cube::render(Camera& camera)
 {
+    if (g_frameContext.shadowPass && (m_emissive || !m_castsShadow))
+        return;
     VkCommandBuffer cmd = g_frameContext.commandBuffer;
-    VkPipeline pipeline = g_frameContext.colorPipeline;
-    VkPipelineLayout layout = g_frameContext.colorPipelineLayout;
+    VkPipeline pipeline = g_frameContext.shadowPass ? g_frameContext.shadowColorPipeline : g_frameContext.colorPipeline;
+    VkPipelineLayout layout = g_frameContext.shadowPass ? g_frameContext.shadowPipelineLayout : g_frameContext.colorPipelineLayout;
     if (cmd == VK_NULL_HANDLE || pipeline == VK_NULL_HANDLE || layout == VK_NULL_HANDLE)
         return;
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Transform::getModel();
+    glm::mat4 mvp = (g_frameContext.shadowPass ? g_frameContext.lightViewProjection :
+                    camera.getProjectionMatrix() * camera.getViewMatrix()) * Transform::getModel();
+    if (!g_frameContext.shadowPass)
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1,
+                                &g_frameContext.sunDescriptorSet, 0, nullptr);
 
     VkBuffer buffers[] = {m_vertexBuffer};
     VkDeviceSize offsets[] = {0};
@@ -75,6 +81,12 @@ void Cube::render(Camera& camera)
     vkCmdPushConstants(cmd, layout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                        0, sizeof(glm::mat4), &mvp);
+    if (!g_frameContext.shadowPass)
+    {
+        const glm::vec4 emission(m_emissive ? 1.0f : 0.0f);
+        vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4), sizeof(glm::vec4), &emission);
+    }
     vkCmdDraw(cmd, m_vertexCount, 1, 0, 0);
 }
 

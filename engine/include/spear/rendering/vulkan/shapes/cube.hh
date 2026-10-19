@@ -28,6 +28,9 @@ public:
     ~Cube();
 
     void render(Camera& camera) override;
+    void setEmissive(bool value) { m_emissive = value; }
+    void setCastsShadow(bool value) { m_castsShadow = value; }
+    bool castsShadow() const { return m_castsShadow; }
 
     static std::unique_ptr<Cube> create(VkDevice device,
                                         VkPhysicalDevice physDevice,
@@ -51,6 +54,8 @@ protected:
     VkBuffer m_vertexBuffer = VK_NULL_HANDLE;
     VkDeviceMemory m_vertexMemory = VK_NULL_HANDLE;
     uint32_t m_vertexCount = 0;
+    bool m_emissive = false;
+    bool m_castsShadow = true;
 };
 
 } // namespace spear::rendering::vulkan

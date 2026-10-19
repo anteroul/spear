@@ -15,6 +15,7 @@
 #include <spear/rendering/vulkan/core/synchronization.hh>
 
 #include <vulkan/vulkan.h>
+#include <glm/mat4x4.hpp>
 
 namespace spear
 {
@@ -46,6 +47,8 @@ public:
     void initializeUIPipeline(VkDescriptorSetLayout descriptorSetLayout);
 
     void setUIRenderer(ui::vulkan::UIRenderer* uiRenderer);
+    void setSunTime(float seconds) { m_sunTime = seconds; }
+    glm::vec3 getSunDirection() const;
 
     void drawFrame();
 
@@ -114,6 +117,33 @@ private:
     VkFormat findDepthFormat();
     void createDepthResources(VkExtent2D extent);
     void cleanupDepthResources();
+    void createSunResources();
+    void cleanupSunResources();
+    void createSunLayout();
+    void createShadowRenderPass();
+    struct SunUniform
+    {
+        glm::mat4 inverseViewProjection;
+        glm::mat4 lightViewProjection;
+        glm::vec4 direction;
+        glm::vec4 viewport;
+    };
+    struct SunFrame
+    {
+        VkImage image = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkImageView view = VK_NULL_HANDLE;
+        VkFramebuffer framebuffer = VK_NULL_HANDLE;
+        VkBuffer uniform = VK_NULL_HANDLE;
+        VkDeviceMemory uniformMemory = VK_NULL_HANDLE;
+        VkDescriptorSet descriptor = VK_NULL_HANDLE;
+    };
+    std::vector<SunFrame> m_sunFrames;
+    VkDescriptorSetLayout m_sunLayout = VK_NULL_HANDLE;
+    VkDescriptorPool m_sunPool = VK_NULL_HANDLE;
+    VkSampler m_shadowSampler = VK_NULL_HANDLE;
+    VkRenderPass m_shadowRenderPass = VK_NULL_HANDLE;
+    float m_sunTime = 0.0f;
 };
 
 } // namespace spear::rendering::vulkan

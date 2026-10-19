@@ -24,6 +24,7 @@ public:
                       VkRenderPass renderPass,
                       VkExtent2D extent,
                       VkDescriptorSetLayout descriptorSetLayout);
+    void initializeShadow(VkDevice device, VkRenderPass renderPass);
     void cleanup(VkDevice device);
 
     VkPipeline getPipeline() const
@@ -48,6 +49,10 @@ public:
     {
         return m_uiPipeline;
     }
+    VkPipeline getShadowColorPipeline() const { return m_shadowColorPipeline; }
+    VkPipeline getShadowTexturedPipeline() const { return m_shadowTexturedPipeline; }
+    VkPipelineLayout getShadowPipelineLayout() const { return m_shadowPipelineLayout; }
+    void setSunLayout(VkDescriptorSetLayout layout) { m_sunLayout = layout; }
     VkPipelineLayout getUIPipelineLayout() const
     {
         return m_uiPipelineLayout;
@@ -67,6 +72,10 @@ private:
 
     VkPipeline m_uiPipeline = VK_NULL_HANDLE;
     VkPipelineLayout m_uiPipelineLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_sunLayout = VK_NULL_HANDLE;
+    VkPipeline m_shadowColorPipeline = VK_NULL_HANDLE;
+    VkPipeline m_shadowTexturedPipeline = VK_NULL_HANDLE;
+    VkPipelineLayout m_shadowPipelineLayout = VK_NULL_HANDLE;
 };
 
 } // namespace spear::rendering::vulkan

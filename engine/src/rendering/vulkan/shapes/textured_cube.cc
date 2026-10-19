@@ -42,16 +42,24 @@ TexturedCube::~TexturedCube()
 
 void TexturedCube::render(Camera& camera)
 {
+    if (g_frameContext.shadowPass && !castsShadow())
+        return;
     VkCommandBuffer cmd = g_frameContext.commandBuffer;
-    VkPipeline pipeline = g_frameContext.texturedPipeline;
-    VkPipelineLayout layout = g_frameContext.texturedPipelineLayout;
+    VkPipeline pipeline = g_frameContext.shadowPass ? g_frameContext.shadowTexturedPipeline : g_frameContext.texturedPipeline;
+    VkPipelineLayout layout = g_frameContext.shadowPass ? g_frameContext.shadowPipelineLayout : g_frameContext.texturedPipelineLayout;
     if (cmd == VK_NULL_HANDLE || pipeline == VK_NULL_HANDLE || layout == VK_NULL_HANDLE)
         return;
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    Texture::bindDescriptorSet(cmd, layout, 0);
+    if (!g_frameContext.shadowPass)
+    {
+        Texture::bindDescriptorSet(cmd, layout, 0);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                                &g_frameContext.sunDescriptorSet, 0, nullptr);
+    }
 
-    glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Transform::getModel();
+    glm::mat4 mvp = (g_frameContext.shadowPass ? g_frameContext.lightViewProjection :
+                    camera.getProjectionMatrix() * camera.getViewMatrix()) * Transform::getModel();
 
     VkBuffer buffers[] = {m_vertexBuffer};
     VkDeviceSize offsets[] = {0};
@@ -59,6 +67,12 @@ void TexturedCube::render(Camera& camera)
     vkCmdPushConstants(cmd, layout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                        0, sizeof(glm::mat4), &mvp);
+    if (!g_frameContext.shadowPass)
+    {
+        const glm::vec4 viewModel(0.0f);
+        vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           sizeof(glm::mat4), sizeof(glm::vec4), &viewModel);
+    }
     vkCmdDraw(cmd, m_vertexCount, 1, 0, 0);
 }
 
