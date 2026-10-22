@@ -1,7 +1,6 @@
 #include <spear/rendering/opengl/texture/stb_texture.hh>
 #include <spear/spear_root.hh>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../../../../third_party/stb_image.h"
 
 #include <GL/glew.h>

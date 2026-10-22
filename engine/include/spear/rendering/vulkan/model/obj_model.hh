@@ -26,7 +26,7 @@ public:
              VkDescriptorPool descriptorPool,
              VkDescriptorSetLayout descriptorSetLayout,
              physics::bullet::ObjectData&& object_data,
-             bool flip_winding = true);
+             bool flip_winding = false);
 
     ~OBJModel();
 
@@ -70,7 +70,7 @@ private:
     VkQueue m_graphicsQueue = VK_NULL_HANDLE;
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
     VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
-    bool m_flipWinding = true;
+    bool m_flipWinding = false;
 };
 
 } // namespace spear::rendering::vulkan

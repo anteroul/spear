@@ -239,8 +239,8 @@ std::vector<OBJModel::Vertex> OBJModel::buildVertices(const std::vector<ModelLoa
 
             tri.push_back(v);
         }
-        // Reverse winding so that after the shader's Y-flip the triangles are
-        // CW in Vulkan framebuffer space (VK_FRONT_FACE_CLOCKWISE).
+        // OBJ faces are counter-clockwise, which the textured pipeline treats as front facing.
+        // flip_winding is for models exported with clockwise faces.
         if (m_flipWinding && tri.size() == 3)
             std::swap(tri[1], tri[2]);
         vertices.insert(vertices.end(), tri.begin(), tri.end());
