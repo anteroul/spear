@@ -25,6 +25,8 @@ public:
                       VkExtent2D extent,
                       VkDescriptorSetLayout descriptorSetLayout);
     void initializeShadow(VkDevice device, VkRenderPass renderPass);
+    /// Smoke simulation (compute) and billboard (graphics, subpass 1) pipelines.
+    void initializeSmoke(VkDevice device, VkRenderPass renderPass, VkDescriptorSetLayout smokeLayout);
     void cleanup(VkDevice device);
 
     VkPipeline getPipeline() const
@@ -49,10 +51,38 @@ public:
     {
         return m_uiPipeline;
     }
-    VkPipeline getShadowColorPipeline() const { return m_shadowColorPipeline; }
-    VkPipeline getShadowTexturedPipeline() const { return m_shadowTexturedPipeline; }
-    VkPipelineLayout getShadowPipelineLayout() const { return m_shadowPipelineLayout; }
-    void setSunLayout(VkDescriptorSetLayout layout) { m_sunLayout = layout; }
+    VkPipeline getShadowColorPipeline() const
+    {
+        return m_shadowColorPipeline;
+    }
+    VkPipeline getShadowTexturedPipeline() const
+    {
+        return m_shadowTexturedPipeline;
+    }
+    VkPipelineLayout getShadowPipelineLayout() const
+    {
+        return m_shadowPipelineLayout;
+    }
+    void setSunLayout(VkDescriptorSetLayout layout)
+    {
+        m_sunLayout = layout;
+    }
+    VkPipeline getSmokeComputePipeline() const
+    {
+        return m_smokeComputePipeline;
+    }
+    VkPipelineLayout getSmokeComputePipelineLayout() const
+    {
+        return m_smokeComputePipelineLayout;
+    }
+    VkPipeline getSmokePipeline() const
+    {
+        return m_smokePipeline;
+    }
+    VkPipelineLayout getSmokePipelineLayout() const
+    {
+        return m_smokePipelineLayout;
+    }
     VkPipelineLayout getUIPipelineLayout() const
     {
         return m_uiPipelineLayout;
@@ -76,6 +106,10 @@ private:
     VkPipeline m_shadowColorPipeline = VK_NULL_HANDLE;
     VkPipeline m_shadowTexturedPipeline = VK_NULL_HANDLE;
     VkPipelineLayout m_shadowPipelineLayout = VK_NULL_HANDLE;
+    VkPipeline m_smokeComputePipeline = VK_NULL_HANDLE;
+    VkPipelineLayout m_smokeComputePipelineLayout = VK_NULL_HANDLE;
+    VkPipeline m_smokePipeline = VK_NULL_HANDLE;
+    VkPipelineLayout m_smokePipelineLayout = VK_NULL_HANDLE;
 };
 
 } // namespace spear::rendering::vulkan

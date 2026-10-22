@@ -23,6 +23,7 @@
 #include <spear/rendering/vulkan/shader.hh>
 #include <spear/rendering/vulkan/shapes/cube.hh>
 #include <spear/rendering/vulkan/shapes/textured_cube.hh>
+#include <spear/rendering/vulkan/smoke_renderer.hh>
 #include <spear/rendering/vulkan/sprite_3d.hh>
 #include <spear/rendering/vulkan/texture/stb_texture.hh>
 #include <spear/rendering/vulkan/texture/texture.hh>
