@@ -9,6 +9,7 @@ int main()
     const spear::BaseWindow::Size window_size = {820, 640};
 
     spear::VulkanWindow window(window_name, window_size);
+    window.setIcon(spear::getAssetPath("spear_icon.png"));
     auto w_size = window.getSize();
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
