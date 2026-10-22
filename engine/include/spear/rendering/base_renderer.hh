@@ -1,6 +1,7 @@
 #ifndef SPEAR_RENDERING_BASE_RENDERER_HH
 #define SPEAR_RENDERING_BASE_RENDERER_HH
 
+#include <spear/rendering/light.hh>
 #include <spear/window/base_window.hh>
 
 #include <glm/vec4.hpp>
@@ -26,6 +27,16 @@ public:
     virtual void setViewPort(int width, int height) = 0;
     virtual void setBackgroundColor(float r, float g, float b, float a) = 0;
 
+    /// Sun, ambient and point lights used for the next rendered frame.
+    LightManager& getLights()
+    {
+        return m_lights;
+    }
+    const LightManager& getLights() const
+    {
+        return m_lights;
+    }
+
 protected:
     const BaseWindow& getWindow() const
     {
@@ -50,6 +61,7 @@ protected:
 private:
     BaseWindow& m_baseWindow;
     std::optional<glm::vec4> m_backgroundColor;
+    LightManager m_lights;
 };
 
 } // namespace spear::rendering

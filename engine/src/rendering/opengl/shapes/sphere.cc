@@ -1,6 +1,7 @@
 #include "spear/physics/bullet/object_data.hh"
 #include <GL/glew.h>
 #include <cmath>
+#include <spear/rendering/opengl/frame_context.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/sphere.hh>
 
@@ -119,6 +120,14 @@ std::vector<uint32_t> Sphere::createIndexBufferData(uint32_t segments, uint32_t 
 
 void Sphere::render(Camera& camera)
 {
+    if (beginShadowDraw(Transform::getModel()))
+    {
+        glBindVertexArray(m_vao);
+        glDrawElements(GL_TRIANGLES, m_numVertices, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        return;
+    }
+
     m_texture->bind();
 
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Shape::Transform::getModel();

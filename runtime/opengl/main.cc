@@ -1,5 +1,6 @@
 #include <spear/spear_opengl.hh>
 
+#include <cmath>
 #include <iostream>
 
 int main()
@@ -38,6 +39,29 @@ int main()
     renderer.init();
     renderer.setViewPort(w_size.x, w_size.y);
     renderer.setBackgroundColor(0.2f, 0.3f, 0.4f, 1.0f);
+    renderer.setCamera(&camera);
+
+    // Lighting: fit the sun's shadow map to this small scene and add two moving point lights.
+    auto& lights = renderer.getLights();
+    lights.setAmbient(glm::vec3(0.2f));
+    auto& sun = lights.getSun();
+    sun.intensity = 0.4f;
+    sun.shadowCenter = glm::vec3(0.0f);
+    sun.shadowExtent = 30.0f;
+    sun.shadowDistance = 60.0f;
+    sun.shadowFar = 150.0f;
+
+    spear::rendering::PointLight warm_light;
+    warm_light.color = glm::vec3(1.0f, 0.6f, 0.3f);
+    warm_light.intensity = 25.0f;
+    warm_light.range = 25.0f;
+    warm_light.castsShadow = true;
+    auto warm_light_id = lights.addPointLight(warm_light);
+
+    spear::rendering::PointLight cold_light = warm_light;
+    cold_light.color = glm::vec3(0.3f, 0.5f, 1.0f);
+    auto cold_light_id = lights.addPointLight(cold_light);
+    float light_time = 0.0f;
 
     // Texture creation.
     auto niilo_texture = std::make_shared<spear::rendering::opengl::SDLTexture>("niilo.jpg");
@@ -143,11 +167,14 @@ int main()
         float delta_time = time_interface.getDeltaTime();
         time_interface.updateFromMain(delta_time);
 
-        // Rendering.
-        renderer.render();
+        // Move the point lights.
+        light_time += delta_time;
+        lights.getPointLight(warm_light_id)->position = glm::vec3(std::cos(light_time) * 6.0f, 2.0f, std::sin(light_time) * 6.0f);
+        lights.getPointLight(cold_light_id)->position = glm::vec3(std::cos(-light_time * 0.7f) * 9.0f, 3.0f, std::sin(-light_time * 0.7f) * 9.0f - 4.0f);
 
-        // Update object's in scene.
-        current_scene->update(camera);
+        // Shadow passes and rendering of the current scene.
+        renderer.setScene(current_scene);
+        renderer.render();
 
         // Run bullet simulation.
         shared_bullet_world->stepSimulation(1.0f / 60.f);

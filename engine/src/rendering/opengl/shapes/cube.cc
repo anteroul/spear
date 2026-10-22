@@ -1,4 +1,5 @@
 #include <spear/rendering/opengl/error.hh>
+#include <spear/rendering/opengl/frame_context.hh>
 #include <spear/rendering/opengl/shader.hh>
 #include <spear/rendering/opengl/shapes/cube.hh>
 
@@ -49,6 +50,14 @@ void Cube::create(std::vector<float>&& vertex_buffer_data, std::vector<float>&& 
 
 void Cube::render(Camera& camera)
 {
+    if (beginShadowDraw(Transform::getModel()))
+    {
+        glBindVertexArray(m_vao);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        return;
+    }
+
     m_texture->bind();
 
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Shape::Transform::getModel();

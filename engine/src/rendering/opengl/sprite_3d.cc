@@ -1,5 +1,6 @@
 #include <spear/rendering/opengl/sprite_3d.hh>
 
+#include <spear/rendering/opengl/frame_context.hh>
 #include <spear/rendering/opengl/shader.hh>
 
 #include <GL/glew.h>
@@ -29,6 +30,14 @@ Sprite3D::~Sprite3D()
 
 void Sprite3D::render(Camera& camera)
 {
+    if (beginShadowDraw(Transform::getModel()))
+    {
+        glBindVertexArray(m_vao);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        return;
+    }
+
     m_texture->bind();
 
     Mesh::m_shader->use();

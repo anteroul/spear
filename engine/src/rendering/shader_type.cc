@@ -70,6 +70,12 @@ ShaderFileData getShaderFiles(ShaderType type, API api)
                               << std::endl;
                     return {vertexPath, fragPath};
                 }
+                case ShaderType::shadow:
+                {
+                    std::string vertexPath = spearRoot() + "/shaders/shadow_opengl_vertex.glsl";
+                    std::string fragPath = spearRoot() + "/shaders/shadow_opengl_fragment.glsl";
+                    return {vertexPath, fragPath};
+                }
             }
             break;
         }
@@ -83,6 +89,7 @@ ShaderFileData getShaderFiles(ShaderType type, API api)
                 case ShaderType::quad:
                 case ShaderType::cube:
                 case ShaderType::material:
+                case ShaderType::shadow:
                 {
                     std::string vertexPath = spearRoot() + "/shaders/minimal_vulkan_vertex.glsl";
                     std::string fragPath = spearRoot() + "/shaders/minimal_vulkan_fragment.glsl";

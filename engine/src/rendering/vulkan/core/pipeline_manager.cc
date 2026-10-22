@@ -1,5 +1,6 @@
 #include <spear/rendering/vulkan/core/pipeline_manager.hh>
 
+#include <spear/rendering/shader_include.hh>
 #include <spear/spear_root.hh>
 
 #include <glm/mat4x4.hpp>
@@ -156,7 +157,7 @@ void PipelineManager::initialize(VkDevice device, VkRenderPass renderPass, VkExt
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -314,7 +315,7 @@ void PipelineManager::initializeTextured(VkDevice device,
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -556,14 +557,16 @@ void PipelineManager::initializeShadow(VkDevice device, VkRenderPass renderPass)
     VkPipelineInputAssemblyStateCreateInfo assembly{};
     assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    VkViewport viewport{0, 0, 2048, 2048, 0, 1};
-    VkRect2D scissor{{0, 0}, {2048, 2048}};
+    // Sun and point light shadow maps differ in size, so viewport and scissor are set per pass.
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
-    viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
-    viewportState.pScissors = &scissor;
+    VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = 2;
+    dynamicState.pDynamicStates = dynamicStates;
     VkPipelineRasterizationStateCreateInfo raster{};
     raster.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     raster.polygonMode = VK_POLYGON_MODE_FILL;
@@ -594,6 +597,7 @@ void PipelineManager::initializeShadow(VkDevice device, VkRenderPass renderPass)
     info.pMultisampleState = &multisample;
     info.pDepthStencilState = &depth;
     info.pColorBlendState = &blend;
+    info.pDynamicState = &dynamicState;
     info.layout = m_shadowPipelineLayout;
     info.renderPass = renderPass;
     binding.stride = sizeof(glm::vec3) * 2;
@@ -609,9 +613,12 @@ void PipelineManager::initializeShadow(VkDevice device, VkRenderPass renderPass)
 
 void PipelineManager::cleanup(VkDevice device)
 {
-    if (m_shadowColorPipeline) vkDestroyPipeline(device, m_shadowColorPipeline, nullptr);
-    if (m_shadowTexturedPipeline) vkDestroyPipeline(device, m_shadowTexturedPipeline, nullptr);
-    if (m_shadowPipelineLayout) vkDestroyPipelineLayout(device, m_shadowPipelineLayout, nullptr);
+    if (m_shadowColorPipeline)
+        vkDestroyPipeline(device, m_shadowColorPipeline, nullptr);
+    if (m_shadowTexturedPipeline)
+        vkDestroyPipeline(device, m_shadowTexturedPipeline, nullptr);
+    if (m_shadowPipelineLayout)
+        vkDestroyPipelineLayout(device, m_shadowPipelineLayout, nullptr);
     m_shadowColorPipeline = VK_NULL_HANDLE;
     m_shadowTexturedPipeline = VK_NULL_HANDLE;
     m_shadowPipelineLayout = VK_NULL_HANDLE;
@@ -661,7 +668,7 @@ std::string PipelineManager::readGLSLFile(const std::string& filepath)
     file.read(code.data(), fileSize);
     file.close();
 
-    return code;
+    return resolveShaderIncludes(code);
 }
 
 std::vector<uint32_t> PipelineManager::compileGLSLToSPIRV(const std::string& source, shaderc_shader_kind kind)

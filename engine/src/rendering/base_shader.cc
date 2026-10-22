@@ -1,4 +1,5 @@
 #include <spear/rendering/base_shader.hh>
+#include <spear/rendering/shader_include.hh>
 #include <spear/rendering/shader_type.hh>
 
 #include <fstream>
@@ -53,8 +54,8 @@ std::string BaseShader::readFile(const std::string& filepath)
 void BaseShader::loadShaderFiles(ShaderType type, API api)
 {
     auto data = getShaderFiles(type, api);
-    m_vertexCode = readFile(data.vertex_shader);
-    m_fragmentCode = readFile(data.fragment_shader);
+    m_vertexCode = resolveShaderIncludes(readFile(data.vertex_shader));
+    m_fragmentCode = resolveShaderIncludes(readFile(data.fragment_shader));
 }
 
 } // namespace spear::rendering

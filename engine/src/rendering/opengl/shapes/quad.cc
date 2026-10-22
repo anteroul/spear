@@ -1,3 +1,4 @@
+#include <spear/rendering/opengl/frame_context.hh>
 #include <spear/rendering/opengl/shapes/quad.hh>
 
 #include <GL/glew.h>
@@ -83,6 +84,14 @@ void Quad::initialize(const glm::vec3& position)
 
 void Quad::render(Camera& camera)
 {
+    if (beginShadowDraw(Transform::getModel()))
+    {
+        glBindVertexArray(m_vao);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        return;
+    }
+
     m_shader->use();
     glm::mat4 mvp = camera.getProjectionMatrix() * camera.getViewMatrix() * Transform::getModel();
     Mesh::m_shader->setMat4("mvp", mvp);

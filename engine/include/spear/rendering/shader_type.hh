@@ -15,7 +15,8 @@ enum class ShaderType
     sprite3D,
     quad,
     cube,
-    material
+    material,
+    shadow
 };
 
 struct ShaderFileData
