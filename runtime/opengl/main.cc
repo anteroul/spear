@@ -86,6 +86,10 @@ int main()
             niilo_texture,
             spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(0.0f, 0.0f, -7.0f), default_size)),
 
+        std::make_shared<spear::rendering::opengl::GLTFModel>(
+            "/cube_pets/Models/GLB-format/animal-dog.glb",
+            spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(-2.5f, 0.0f, -7.0f), default_size)),
+
     };
 
     auto scene1_function = [](spear::Scene::Container& objects)

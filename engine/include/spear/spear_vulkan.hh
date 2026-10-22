@@ -18,6 +18,7 @@
 // Vulkan rendering
 #include <spear/rendering/vulkan/frame_context.hh>
 #include <spear/rendering/vulkan/mesh.hh>
+#include <spear/rendering/vulkan/model/gltf_model.hh>
 #include <spear/rendering/vulkan/model/obj_model.hh>
 #include <spear/rendering/vulkan/renderer.hh>
 #include <spear/rendering/vulkan/shader.hh>

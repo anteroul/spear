@@ -1,6 +1,5 @@
 #include <spear/rendering/vulkan/texture/stb_texture.hh>
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../../../../third_party/stb_image.h"
 
 #include <cstring>
