@@ -3,6 +3,7 @@
 
 #include <spear/camera.hh>
 #include <spear/rendering/base_renderer.hh>
+#include <spear/rendering/lighting_uniform.hh>
 #include <spear/rendering/vulkan/ui/ui_renderer.hh>
 #include <spear/window/vulkan_window.hh>
 
@@ -14,8 +15,10 @@
 #include <spear/rendering/vulkan/core/swapchain.hh>
 #include <spear/rendering/vulkan/core/synchronization.hh>
 
-#include <vulkan/vulkan.h>
 #include <glm/mat4x4.hpp>
+#include <vulkan/vulkan.h>
+
+#include <array>
 
 namespace spear
 {
@@ -47,8 +50,15 @@ public:
     void initializeUIPipeline(VkDescriptorSetLayout descriptorSetLayout);
 
     void setUIRenderer(ui::vulkan::UIRenderer* uiRenderer);
-    void setSunTime(float seconds) { m_sunTime = seconds; }
-    glm::vec3 getSunDirection() const;
+    /// Moves the sun along its default day orbit. Same as setting getLights().getSun().direction.
+    void setSunTime(float seconds)
+    {
+        getLights().getSun().direction = sunDirectionAt(seconds);
+    }
+    glm::vec3 getSunDirection() const
+    {
+        return getLights().getSun().direction;
+    }
 
     void drawFrame();
 
@@ -121,12 +131,17 @@ private:
     void cleanupSunResources();
     void createSunLayout();
     void createShadowRenderPass();
-    struct SunUniform
+    void transitionShadowImages();
+    void recordLighting(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void recordShadowPass(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer, uint32_t size,
+                          const glm::mat4& lightViewProjection);
+    struct PointShadow
     {
-        glm::mat4 inverseViewProjection;
-        glm::mat4 lightViewProjection;
-        glm::vec4 direction;
-        glm::vec4 viewport;
+        VkImage image = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkImageView cubeView = VK_NULL_HANDLE;
+        std::array<VkImageView, 6> faceViews{};
+        std::array<VkFramebuffer, 6> framebuffers{};
     };
     struct SunFrame
     {
@@ -137,13 +152,13 @@ private:
         VkBuffer uniform = VK_NULL_HANDLE;
         VkDeviceMemory uniformMemory = VK_NULL_HANDLE;
         VkDescriptorSet descriptor = VK_NULL_HANDLE;
+        std::array<PointShadow, LightManager::maxShadowedPointLights> pointShadows;
     };
     std::vector<SunFrame> m_sunFrames;
     VkDescriptorSetLayout m_sunLayout = VK_NULL_HANDLE;
     VkDescriptorPool m_sunPool = VK_NULL_HANDLE;
     VkSampler m_shadowSampler = VK_NULL_HANDLE;
     VkRenderPass m_shadowRenderPass = VK_NULL_HANDLE;
-    float m_sunTime = 0.0f;
 };
 
 } // namespace spear::rendering::vulkan

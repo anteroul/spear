@@ -1,5 +1,6 @@
 #include <spear/spear_vulkan.hh>
 
+#include <cmath>
 #include <iostream>
 
 int main()
@@ -69,6 +70,45 @@ int main()
     };
     // clang-format on
 
+    // Lighting: fit the sun's shadow map to this small scene and add two moving point lights.
+    auto& lights = renderer.getLights();
+    lights.setAmbient(glm::vec3(0.2f));
+    auto& sun = lights.getSun();
+    sun.intensity = 0.4f;
+    sun.shadowCenter = glm::vec3(0.0f);
+    sun.shadowExtent = 30.0f;
+    sun.shadowDistance = 60.0f;
+    sun.shadowFar = 150.0f;
+
+    spear::rendering::PointLight warm_light;
+    warm_light.color = glm::vec3(1.0f, 0.6f, 0.3f);
+    warm_light.intensity = 25.0f;
+    warm_light.range = 25.0f;
+    warm_light.castsShadow = true;
+    auto warm_light_id = lights.addPointLight(warm_light);
+
+    spear::rendering::PointLight cold_light = warm_light;
+    cold_light.color = glm::vec3(0.3f, 0.5f, 1.0f);
+    auto cold_light_id = lights.addPointLight(cold_light);
+
+    // Floor to catch the shadows, and small glowing cubes marking the lights.
+    auto floor = std::make_shared<spear::rendering::vulkan::Cube>(
+            device, physDevice, spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(0.0f), default_size),
+            glm::vec4(0.6f, 0.6f, 0.6f, 1.0f));
+    floor->translate(glm::vec3(0.0f, -2.0f, 0.0f));
+    floor->scale(glm::vec3(30.0f, 0.1f, 30.0f));
+    scene_objects.push_back(floor);
+
+    std::array<std::shared_ptr<spear::rendering::vulkan::Cube>, 2> light_markers;
+    for (auto& marker : light_markers)
+    {
+        marker = std::make_shared<spear::rendering::vulkan::Cube>(
+                device, physDevice, spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(0.0f), default_size));
+        marker->setEmissive(true);
+        scene_objects.push_back(marker);
+    }
+    float light_time = 0.0f;
+
     auto scene_function = [](spear::Scene::Container&) {};
     auto scene_id = spear::createScene(scene_objects, scene_function, scene_manager);
     scene_manager.loadScene(scene_id);
@@ -79,6 +119,7 @@ int main()
 
     eventHandler.handleInput(SDLK_ESCAPE, [&device, &descriptorPool, &descriptorSetLayout]()
     {
+        vkDeviceWaitIdle(device);
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
         exit(0);
@@ -86,6 +127,7 @@ int main()
 
     eventHandler.registerCallback(SDL_EVENT_QUIT, [&device, &descriptorPool, &descriptorSetLayout](const SDL_Event&)
     {
+        vkDeviceWaitIdle(device);
         vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
         exit(0);
@@ -108,6 +150,15 @@ int main()
         time_interface.updateFromMain(delta_time);
 
         eventHandler.handleEvents(movement_controller, delta_time);
+
+        // Move the point lights and their markers.
+        light_time += delta_time;
+        const glm::vec3 warm_position(std::cos(light_time) * 6.0f, 2.0f, std::sin(light_time) * 6.0f);
+        const glm::vec3 cold_position(std::cos(-light_time * 0.7f) * 9.0f, 3.0f, std::sin(-light_time * 0.7f) * 9.0f - 4.0f);
+        lights.getPointLight(warm_light_id)->position = warm_position;
+        lights.getPointLight(cold_light_id)->position = cold_position;
+        light_markers[0]->setModel(glm::scale(glm::translate(glm::mat4(1.0f), warm_position), glm::vec3(0.15f)));
+        light_markers[1]->setModel(glm::scale(glm::translate(glm::mat4(1.0f), cold_position), glm::vec3(0.15f)));
 
         renderer.setScene(scene_manager.getCurrentScene());
         renderer.render();

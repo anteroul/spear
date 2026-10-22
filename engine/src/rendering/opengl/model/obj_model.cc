@@ -1,5 +1,6 @@
 #include <spear/physics/bullet/object_data.hh>
 #include <spear/rendering/opengl/error.hh>
+#include <spear/rendering/opengl/frame_context.hh>
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/shader.hh>
 
@@ -7,13 +8,6 @@
 
 namespace spear::rendering::opengl
 {
-
-OBJModel::Light::Light(float light_intensity, glm::vec3 light_position, glm::vec3 light_color)
-    : m_lightIntensity(light_intensity),
-      m_lightPosition(light_position),
-      m_lightColor(light_color)
-{
-}
 
 OBJModel::OBJModel(const std::string& object_file_path, const std::string& material_file_path, std::shared_ptr<BaseTexture> texture, physics::bullet::ObjectData&& object_data)
     : BaseModel(std::shared_ptr<rendering::BaseShader>(rendering::opengl::Shader::create(rendering::ShaderType::material)), std::move(object_data)),
@@ -99,6 +93,14 @@ void OBJModel::initialize()
 
 void OBJModel::render(Camera& camera)
 {
+    if (beginShadowDraw(GameObject::Transform::getModel()))
+    {
+        glBindVertexArray(m_vao);
+        glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+        glBindVertexArray(0);
+        return;
+    }
+
     if (m_texture)
     {
         m_texture->bind();
@@ -110,18 +112,8 @@ void OBJModel::render(Camera& camera)
     m_shader->setMat4("mvp", mvp);
     m_shader->setSampler2D("textureSampler", 0);
 
-    m_shader->setVec3f("light.position", m_light.getLightPosition());
-    m_shader->setVec3f("light.color", m_light.getLightColor());
-    m_shader->setFloat("light.intensity", m_light.getLightIntensity());
-
-    glm::vec3 cameraPosition = camera.getPosition();
-    m_shader->setVec3f("cameraPosition", cameraPosition);
-
-    // Stored material data from OBJLoader.
-    m_shader->setVec3f("material.ambientColor", m_material.ambientColor);
+    // Lighting comes from the renderer's lighting uniform block.
     m_shader->setVec3f("material.diffuseColor", m_material.diffuseColor);
-    m_shader->setVec3f("material.specularColor", m_material.specularColor);
-    m_shader->setFloat("material.specularExponent", m_material.specularExponent);
 
     // Draw
     glBindVertexArray(m_vao);
