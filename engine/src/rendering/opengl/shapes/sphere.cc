@@ -84,7 +84,8 @@ std::vector<float> Sphere::createUvData(int latitudeBands, int longitudeBands)
         for (int lon = 0; lon <= longitudeBands; ++lon)
         {
             float u = static_cast<float>(lon) / longitudeBands;
-            float v = static_cast<float>(lat) / latitudeBands;
+            // Latitude 0 is the top of the sphere, which is the top of the image (v = 1).
+            float v = 1.0f - static_cast<float>(lat) / latitudeBands;
             uvs.emplace_back(u);
             uvs.emplace_back(v);
         }
