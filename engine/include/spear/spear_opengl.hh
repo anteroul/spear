@@ -8,6 +8,7 @@
 
 // OpenGL rendering
 #include <spear/rendering/opengl/material.hh>
+#include <spear/rendering/opengl/model/gltf_model.hh>
 #include <spear/rendering/opengl/model/obj_model.hh>
 #include <spear/rendering/opengl/renderer.hh>
 #include <spear/rendering/opengl/shader.hh>

@@ -75,13 +75,23 @@ void Texture::createDescriptorSet(VkDescriptorPool pool,
                                   VkImageView imageView,
                                   VkSampler sampler)
 {
+    m_descriptorSet = allocateDescriptorSet(m_device, pool, layout, imageView, sampler);
+}
+
+VkDescriptorSet Texture::allocateDescriptorSet(VkDevice device,
+                                               VkDescriptorPool pool,
+                                               VkDescriptorSetLayout layout,
+                                               VkImageView imageView,
+                                               VkSampler sampler)
+{
+    VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = pool;
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
 
-    if (vkAllocateDescriptorSets(m_device, &allocInfo, &m_descriptorSet) != VK_SUCCESS)
+    if (vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet) != VK_SUCCESS)
         throw std::runtime_error("Texture: failed to allocate descriptor set!");
 
     VkDescriptorImageInfo imageInfo{};
@@ -91,14 +101,15 @@ void Texture::createDescriptorSet(VkDescriptorPool pool,
 
     VkWriteDescriptorSet write{};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.dstSet = m_descriptorSet;
+    write.dstSet = descriptorSet;
     write.dstBinding = 0;
     write.dstArrayElement = 0;
     write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     write.descriptorCount = 1;
     write.pImageInfo = &imageInfo;
 
-    vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
+    vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+    return descriptorSet;
 }
 
 void Texture::bindDescriptorSet(VkCommandBuffer cmd,

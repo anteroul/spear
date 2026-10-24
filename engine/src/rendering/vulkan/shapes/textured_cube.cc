@@ -19,6 +19,7 @@ TexturedCube::TexturedCube(VkDevice device,
     : Cube(device, physDevice, std::move(object_data), color),
       Texture(),
       m_descriptorPool(descriptorPool),
+      m_descriptorSetLayout(descriptorSetLayout),
       m_texture(std::move(texture))
 {
     // Initialize the Texture base with the logical device.
@@ -38,6 +39,23 @@ TexturedCube::~TexturedCube()
     if (m_descriptorSet != VK_NULL_HANDLE)
         vkFreeDescriptorSets(Texture::m_device, m_descriptorPool, 1, &m_descriptorSet);
     m_descriptorSet = VK_NULL_HANDLE;
+    for (VkDescriptorSet& set : m_faceDescriptorSets)
+    {
+        if (set != VK_NULL_HANDLE)
+            vkFreeDescriptorSets(Texture::m_device, m_descriptorPool, 1, &set);
+        set = VK_NULL_HANDLE;
+    }
+}
+
+void TexturedCube::setFaceTexture(Face face, std::shared_ptr<vulkan::Texture> texture)
+{
+    const auto index = static_cast<size_t>(face);
+    VkDescriptorSet& set = m_faceDescriptorSets[index];
+    if (set != VK_NULL_HANDLE)
+        vkFreeDescriptorSets(Texture::m_device, m_descriptorPool, 1, &set);
+    set = Texture::allocateDescriptorSet(Texture::m_device, m_descriptorPool, m_descriptorSetLayout,
+                                         texture->getImageView(), texture->getSampler());
+    m_faceTextures[index] = std::move(texture);
 }
 
 void TexturedCube::render(Camera& camera)
@@ -52,11 +70,8 @@ void TexturedCube::render(Camera& camera)
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     if (!g_frameContext.shadowPass)
-    {
-        Texture::bindDescriptorSet(cmd, layout, 0);
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
                                 &g_frameContext.sunDescriptorSet, 0, nullptr);
-    }
 
     glm::mat4 mvp = (g_frameContext.shadowPass ? g_frameContext.lightViewProjection :
                     camera.getProjectionMatrix() * camera.getViewMatrix()) * Transform::getModel();
@@ -67,13 +82,28 @@ void TexturedCube::render(Camera& camera)
     vkCmdPushConstants(cmd, layout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                        0, sizeof(glm::mat4), &mvp);
-    if (!g_frameContext.shadowPass)
+    if (g_frameContext.shadowPass)
     {
-        const glm::vec4 viewModel(0.0f);
-        vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                           sizeof(glm::mat4), sizeof(glm::vec4), &viewModel);
+        vkCmdDraw(cmd, m_vertexCount, 1, 0, 0);
+        return;
     }
-    vkCmdDraw(cmd, m_vertexCount, 1, 0, 0);
+
+    const glm::vec4 viewModel(0.0f);
+    vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                       sizeof(glm::mat4), sizeof(glm::vec4), &viewModel);
+
+    // One draw per face, rebinding the texture only where a face overrides it.
+    VkDescriptorSet bound = VK_NULL_HANDLE;
+    for (size_t face = 0; face < s_faceCount; ++face)
+    {
+        VkDescriptorSet set = m_faceDescriptorSets[face] != VK_NULL_HANDLE ? m_faceDescriptorSets[face] : m_descriptorSet;
+        if (set != bound)
+        {
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &set, 0, nullptr);
+            bound = set;
+        }
+        vkCmdDraw(cmd, s_verticesPerFace, 1, static_cast<uint32_t>(face) * s_verticesPerFace, 0);
+    }
 }
 
 void TexturedCube::replaceVertexBuffer(VkPhysicalDevice physDevice)

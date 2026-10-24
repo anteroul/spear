@@ -9,6 +9,12 @@ int main()
     const spear::BaseWindow::Size window_size = {820, 640};
 
     spear::VulkanWindow window(window_name, window_size);
+    window.setIcon(spear::getAssetPath("spear_icon.png"));
+    // Keep the cursor hidden and locked to the window centre; mouse motion only turns the camera.
+    window.hideCursor(true);
+    window.setMouseGrab(true);
+    window.lockCursorToCenter(true);
+    window.setRelativeMouseMode(true);
     auto w_size = window.getSize();
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
@@ -49,13 +55,17 @@ int main()
     auto texture = spear::rendering::vulkan::STBTexture::create(device, physDevice, renderer.getCommandPool(), renderer.getGraphicsQueue(), spear::getAssetPath("wallnut.jpg"));
     auto niilo = spear::rendering::vulkan::STBTexture::create(device, physDevice, renderer.getCommandPool(), renderer.getGraphicsQueue(), spear::getAssetPath("niilo.jpg"));
 
-    // clang-format off
-    auto scene_objects = spear::Scene::Container{
-        std::make_shared<spear::rendering::vulkan::TexturedCube>(
+    // Wood cube with niilo on the face towards the player's starting position.
+    auto niilo_cube = std::make_shared<spear::rendering::vulkan::TexturedCube>(
             device, physDevice,
             texture,
             descriptorPool, descriptorSetLayout,
-            spear::physics::bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.5f, 0.0f, 0.0f), default_size)),
+            spear::physics::bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.5f, 0.0f, 0.0f), default_size));
+    niilo_cube->setFaceTexture(spear::rendering::vulkan::TexturedCube::Face::Front, niilo);
+
+    // clang-format off
+    auto scene_objects = spear::Scene::Container{
+        niilo_cube,
         std::make_shared<spear::rendering::vulkan::Sprite3D>(
             device, physDevice,
             niilo,
@@ -67,6 +77,12 @@ int main()
             "/cube_pets/Models/OBJ-format/animal-bunny.obj", "/cube_pets/Models/OBJ-format/animal-bunny.mtl",
             descriptorPool, descriptorSetLayout,
             spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(0.0f, 0.0f, -7.0f), default_size)),
+        std::make_shared<spear::rendering::vulkan::GLTFModel>(
+            device, physDevice,
+            renderer.getCommandPool(), renderer.getGraphicsQueue(),
+            "/cube_pets/Models/GLB-format/animal-dog.glb",
+            descriptorPool, descriptorSetLayout,
+            spear::physics::bullet::ObjectData(shared_bullet_world, 0.0f, glm::vec3(-2.5f, 0.0f, -7.0f), default_size)),
     };
     // clang-format on
 
@@ -90,6 +106,27 @@ int main()
     spear::rendering::PointLight cold_light = warm_light;
     cold_light.color = glm::vec3(0.3f, 0.5f, 1.0f);
     auto cold_light_id = lights.addPointLight(cold_light);
+
+    // Smoke: a tall grey column and a low, dark, drifting plume.
+    auto& smoke = renderer.getSmoke();
+    smoke.setWind(glm::vec3(0.12f, 0.0f, 0.0f));
+
+    spear::rendering::SmokeEmitter column;
+    column.position = glm::vec3(-4.0f, -1.9f, -3.0f);
+    smoke.addEmitter(column);
+
+    spear::rendering::SmokeEmitter plume;
+    plume.position = glm::vec3(4.0f, -1.9f, -1.0f);
+    plume.radius = 0.6f;
+    plume.velocity = glm::vec3(0.0f, 0.5f, 0.0f);
+    plume.color = glm::vec3(0.25f);
+    plume.opacity = 0.5f;
+    plume.startSize = 0.6f;
+    plume.endSize = 3.0f;
+    plume.lifetime = 8.0f;
+    plume.rate = 30.0f;
+    plume.turbulence = 1.0f;
+    smoke.addEmitter(plume);
 
     // Floor to catch the shadows, and small glowing cubes marking the lights.
     auto floor = std::make_shared<spear::rendering::vulkan::Cube>(

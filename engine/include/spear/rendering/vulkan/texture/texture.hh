@@ -79,6 +79,14 @@ public:
     /// (fragment stage).
     static VkDescriptorSetLayout createDescriptorSetLayout(VkDevice device);
 
+    /// Allocate a descriptor set from \p pool with a combined-image-sampler at binding 0
+    /// using \p imageView and \p sampler, and return it. The caller owns the set.
+    static VkDescriptorSet allocateDescriptorSet(VkDevice device,
+                                                 VkDescriptorPool pool,
+                                                 VkDescriptorSetLayout layout,
+                                                 VkImageView imageView,
+                                                 VkSampler sampler);
+
     /// Allocate a descriptor set from \p pool and write a combined-image-sampler
     /// at binding 0 using the provided \p imageView and \p sampler.
     void createDescriptorSet(VkDescriptorPool pool,
