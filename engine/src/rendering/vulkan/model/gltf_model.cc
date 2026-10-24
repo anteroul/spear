@@ -1,0 +1,167 @@
+#include <spear/rendering/vulkan/frame_context.hh>
+#include <spear/rendering/vulkan/model/gltf_model.hh>
+
+#include <glm/mat4x4.hpp>
+
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
+
+namespace spear::rendering::vulkan
+{
+
+namespace
+{
+
+uint32_t findMemoryType(VkPhysicalDevice physDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProps;
+    vkGetPhysicalDeviceMemoryProperties(physDevice, &memProps);
+    for (uint32_t i = 0; i < memProps.memoryTypeCount; ++i)
+    {
+        if ((typeFilter & (1u << i)) && (memProps.memoryTypes[i].propertyFlags & properties) == properties)
+            return i;
+    }
+    throw std::runtime_error("GLTFModel: failed to find suitable memory type!");
+}
+
+} // namespace
+
+GLTFModel::GLTFModel(VkDevice device,
+                     VkPhysicalDevice physDevice,
+                     VkCommandPool commandPool,
+                     VkQueue graphicsQueue,
+                     const std::string& file_path,
+                     VkDescriptorPool descriptorPool,
+                     VkDescriptorSetLayout descriptorSetLayout,
+                     physics::bullet::ObjectData&& object_data)
+    : BaseModel(nullptr, std::move(object_data)),
+      m_device(device),
+      m_physDevice(physDevice),
+      m_commandPool(commandPool),
+      m_graphicsQueue(graphicsQueue),
+      m_descriptorPool(descriptorPool),
+      m_descriptorSetLayout(descriptorSetLayout)
+{
+    GLTFLoader loader;
+    if (!loader.load(file_path))
+        return;
+    for (const auto& material : loader.getMaterials())
+        createMaterial(material);
+    std::cout << "GLTFModel: loaded " << file_path << " with " << m_materialData.size() << " materials" << std::endl;
+}
+
+GLTFModel::~GLTFModel()
+{
+    for (auto& mat : m_materialData)
+    {
+        if (mat.descriptorSet != VK_NULL_HANDLE)
+            vkFreeDescriptorSets(m_device, m_descriptorPool, 1, &mat.descriptorSet);
+        if (mat.vertexBuffer != VK_NULL_HANDLE)
+            vkDestroyBuffer(m_device, mat.vertexBuffer, nullptr);
+        if (mat.vertexMemory != VK_NULL_HANDLE)
+            vkFreeMemory(m_device, mat.vertexMemory, nullptr);
+    }
+}
+
+void GLTFModel::render(Camera& camera)
+{
+    VkCommandBuffer cmd = g_frameContext.commandBuffer;
+    VkPipeline pipeline = g_frameContext.shadowPass ? g_frameContext.shadowTexturedPipeline : g_frameContext.texturedPipeline;
+    VkPipelineLayout layout = g_frameContext.shadowPass ? g_frameContext.shadowPipelineLayout : g_frameContext.texturedPipelineLayout;
+    if (cmd == VK_NULL_HANDLE || pipeline == VK_NULL_HANDLE || layout == VK_NULL_HANDLE)
+        return;
+
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    glm::mat4 mvp = (g_frameContext.shadowPass ? g_frameContext.lightViewProjection : camera.getProjectionMatrix() * camera.getViewMatrix()) * Transform::getModel();
+    if (!g_frameContext.shadowPass)
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                                &g_frameContext.sunDescriptorSet, 0, nullptr);
+
+    for (const auto& mat : m_materialData)
+    {
+        if (!g_frameContext.shadowPass)
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &mat.descriptorSet, 0, nullptr);
+
+        VkBuffer buffers[] = {mat.vertexBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd, 0, 1, buffers, offsets);
+        vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(glm::mat4), &mvp);
+        if (!g_frameContext.shadowPass)
+        {
+            const glm::vec4 viewModel(g_frameContext.viewModel ? 1.0f : 0.0f);
+            vkCmdPushConstants(cmd, layout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               sizeof(glm::mat4), sizeof(glm::vec4), &viewModel);
+        }
+        vkCmdDraw(cmd, mat.vertexCount, 1, 0, 0);
+    }
+}
+
+void GLTFModel::createMaterial(const GLTFLoader::Material& material)
+{
+    MaterialRenderData renderData;
+
+    renderData.texture = std::make_shared<STBTexture>(m_device, m_physDevice, m_commandPool, m_graphicsQueue);
+    renderData.texture->loadFromRGBA(material.baseColor.pixels.data(), material.baseColor.width,
+                                     material.baseColor.height);
+
+    std::vector<Vertex> vertices;
+    vertices.reserve(material.vertices.size());
+    // glTF faces are counter-clockwise, which the textured pipeline treats as front facing.
+    for (const auto& vertex : material.vertices)
+        vertices.push_back({vertex.position, vertex.uv});
+    renderData.vertexCount = static_cast<uint32_t>(vertices.size());
+    const VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
+
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = bufferSize;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    if (vkCreateBuffer(m_device, &bufferInfo, nullptr, &renderData.vertexBuffer) != VK_SUCCESS)
+        throw std::runtime_error("GLTFModel: failed to create vertex buffer");
+
+    VkMemoryRequirements memReq;
+    vkGetBufferMemoryRequirements(m_device, renderData.vertexBuffer, &memReq);
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memReq.size;
+    allocInfo.memoryTypeIndex = findMemoryType(m_physDevice, memReq.memoryTypeBits,
+                                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    if (vkAllocateMemory(m_device, &allocInfo, nullptr, &renderData.vertexMemory) != VK_SUCCESS)
+        throw std::runtime_error("GLTFModel: failed to allocate vertex memory");
+    vkBindBufferMemory(m_device, renderData.vertexBuffer, renderData.vertexMemory, 0);
+
+    void* data;
+    vkMapMemory(m_device, renderData.vertexMemory, 0, bufferSize, 0, &data);
+    std::memcpy(data, vertices.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(m_device, renderData.vertexMemory);
+
+    VkDescriptorSetAllocateInfo dsAllocInfo{};
+    dsAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    dsAllocInfo.descriptorPool = m_descriptorPool;
+    dsAllocInfo.descriptorSetCount = 1;
+    dsAllocInfo.pSetLayouts = &m_descriptorSetLayout;
+    if (vkAllocateDescriptorSets(m_device, &dsAllocInfo, &renderData.descriptorSet) != VK_SUCCESS)
+        throw std::runtime_error("GLTFModel: failed to allocate descriptor set");
+
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = renderData.texture->getImageView();
+    imageInfo.sampler = renderData.texture->getSampler();
+
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.dstSet = renderData.descriptorSet;
+    write.dstBinding = 0;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    write.descriptorCount = 1;
+    write.pImageInfo = &imageInfo;
+    vkUpdateDescriptorSets(m_device, 1, &write, 0, nullptr);
+
+    m_materialData.push_back(renderData);
+}
+
+} // namespace spear::rendering::vulkan
