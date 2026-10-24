@@ -2,6 +2,7 @@
 #include <spear/rendering/vulkan/renderer.hh>
 #include <spear/scene.hh>
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 
@@ -22,11 +23,14 @@ Renderer::Renderer(VulkanWindow& vulkan_window)
     createSunLayout();
     createShadowRenderPass();
     createDepthResources(m_swapchain.getExtent());
+    m_smokeRenderer.initialize(m_deviceManager.getDevice(), m_deviceManager.getPhysicalDevice());
+    m_smokeRenderer.createFrameResources(m_deviceManager.getDevice(), m_deviceManager.getPhysicalDevice(), m_depthImageViews);
     m_renderPassManager.initialize(m_deviceManager.getDevice(), m_swapchain.getFormat(), m_depthFormat);
     m_frameBufferManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getImageViews(), m_depthImageViews, m_swapchain.getExtent());
     m_pipelineManager.setSunLayout(m_sunLayout);
     m_pipelineManager.initialize(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_swapchain.getExtent());
     m_pipelineManager.initializeShadow(m_deviceManager.getDevice(), m_shadowRenderPass);
+    m_pipelineManager.initializeSmoke(m_deviceManager.getDevice(), m_renderPassManager.getRenderPass(), m_smokeRenderer.getLayout());
     createSunResources();
     m_commandBufferManager.initialize(m_deviceManager.getDevice(), m_deviceManager.getCommandPool(), m_swapchain.getImageCount());
     m_synchronization.initialize(m_deviceManager.getDevice(), m_framesInFlight, m_swapchain.getImageCount());
@@ -161,6 +165,12 @@ void Renderer::drawFrame()
     recordLighting(commandBuffer, imageIndex);
     auto& sunFrame = m_sunFrames[imageIndex];
 
+    const float smokeDelta = advanceSmokeClock();
+    if (m_camera && m_scene)
+        m_smokeRenderer.recordSimulation(commandBuffer, imageIndex, getSmoke(), smokeDelta, m_smokeTime,
+                                         m_pipelineManager.getSmokeComputePipeline(),
+                                         m_pipelineManager.getSmokeComputePipelineLayout());
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = render_pass;
@@ -196,11 +206,15 @@ void Renderer::drawFrame()
         g_frameContext.texturedPipeline = m_pipelineManager.getTexturedPipeline();
         g_frameContext.texturedPipelineLayout = m_pipelineManager.getTexturedPipelineLayout();
         g_frameContext.sunDescriptorSet = sunFrame.descriptor;
-        g_frameContext.uiPipeline = m_pipelineManager.getUIPipeline();
-        g_frameContext.uiPipelineLayout = m_pipelineManager.getUIPipelineLayout();
         m_scene->update(*m_camera);
         g_frameContext = {};
     }
+
+    // Subpass 1: transparent smoke over the opaque scene, then the UI.
+    vkCmdNextSubpass(commandBuffer, VK_SUBPASS_CONTENTS_INLINE);
+    if (m_camera && m_scene)
+        m_smokeRenderer.recordDraw(commandBuffer, imageIndex, *m_camera, extent, m_pipelineManager.getSmokePipeline(),
+                                   m_pipelineManager.getSmokePipelineLayout(), sunFrame.descriptor);
 
     // Render UI overlay after the 3D scene
     if (m_uiRenderer)
@@ -263,12 +277,24 @@ void Renderer::drawFrame()
     m_currentFrame = (m_currentFrame + 1) % m_framesInFlight;
 }
 
+float Renderer::advanceSmokeClock()
+{
+    const auto now = std::chrono::steady_clock::now();
+    float delta = 0.0f;
+    if (m_lastFrameTime != std::chrono::steady_clock::time_point{})
+        delta = std::min(std::chrono::duration<float>(now - m_lastFrameTime).count(), 0.1f);
+    m_lastFrameTime = now;
+    m_smokeTime += delta;
+    return delta;
+}
+
 void Renderer::cleanSwapchain()
 {
     auto* device = m_deviceManager.getDevice();
     auto* command_pool = m_deviceManager.getCommandPool();
 
     cleanupSunResources();
+    m_smokeRenderer.cleanupFrameResources(device);
     m_frameBufferManager.cleanup(device);
     m_commandBufferManager.cleanup(device, command_pool);
     m_swapchain.cleanup(device);
@@ -281,6 +307,7 @@ void Renderer::cleanup()
     auto* device = m_deviceManager.getDevice();
     m_synchronization.cleanup(device);
     m_pipelineManager.cleanup(device);
+    m_smokeRenderer.cleanup(device);
     if (m_shadowRenderPass)
         vkDestroyRenderPass(device, m_shadowRenderPass, nullptr);
     if (m_shadowSampler)
@@ -313,9 +340,11 @@ void Renderer::recreateSwapchain()
 
     m_swapchain.recreate(m_deviceManager.getPhysicalDevice(), device, m_surface, window_size.x, window_size.y);
     createDepthResources(m_swapchain.getExtent());
+    m_smokeRenderer.createFrameResources(device, m_deviceManager.getPhysicalDevice(), m_depthImageViews);
     m_pipelineManager.cleanup(device);
     m_pipelineManager.initialize(device, m_renderPassManager.getRenderPass(), m_swapchain.getExtent());
     m_pipelineManager.initializeShadow(device, m_shadowRenderPass);
+    m_pipelineManager.initializeSmoke(device, m_renderPassManager.getRenderPass(), m_smokeRenderer.getLayout());
     createSunResources();
     if (m_texturedDescriptorSetLayout != VK_NULL_HANDLE)
         m_pipelineManager.initializeTextured(device, m_renderPassManager.getRenderPass(), m_swapchain.getExtent(), m_texturedDescriptorSetLayout);
@@ -368,7 +397,8 @@ void Renderer::createDepthResources(VkExtent2D extent)
         imageInfo.format = m_depthFormat;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        // Read as an input attachment by the smoke subpass.
+        imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
