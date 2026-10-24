@@ -44,6 +44,19 @@ public:
     {
         return m_texturedPipelineLayout;
     }
+    /// Textured pipeline variants sharing the textured pipeline layout.
+    VkPipeline getTexturedDoubleSidedPipeline() const
+    {
+        return m_texturedDoubleSidedPipeline;
+    }
+    VkPipeline getTransparentPipeline() const
+    {
+        return m_transparentPipeline;
+    }
+    VkPipeline getTransparentDoubleSidedPipeline() const
+    {
+        return m_transparentDoubleSidedPipeline;
+    }
 
     VkPipeline getUIPipeline() const
     {
@@ -69,6 +82,9 @@ private:
 
     VkPipeline m_texturedPipeline = VK_NULL_HANDLE;
     VkPipelineLayout m_texturedPipelineLayout = VK_NULL_HANDLE;
+    VkPipeline m_texturedDoubleSidedPipeline = VK_NULL_HANDLE;
+    VkPipeline m_transparentPipeline = VK_NULL_HANDLE;
+    VkPipeline m_transparentDoubleSidedPipeline = VK_NULL_HANDLE;
 
     VkPipeline m_uiPipeline = VK_NULL_HANDLE;
     VkPipelineLayout m_uiPipelineLayout = VK_NULL_HANDLE;
