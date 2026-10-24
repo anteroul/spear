@@ -6,6 +6,7 @@
 #include <spear/create_scene.hh>
 #include <spear/event_handler.hh>
 #include <spear/game_object.hh>
+#include <spear/input.hh>
 #include <spear/material.hh>
 #include <spear/mesh.hh>
 #include <spear/model/obj_loader.hh>

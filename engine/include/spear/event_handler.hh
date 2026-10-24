@@ -2,6 +2,7 @@
 #define SPEAR_EVENT_HANDLER_HH
 
 #include <spear/movement_controller.hh>
+#include <spear/input.hh>
 
 #include <SDL3/SDL_events.h>
 
@@ -24,7 +25,7 @@ public:
     }
 
     /// Process SDL events and call registered callbacks
-    void handleEvents(MovementController& movement_controller, float delta_time,
+    void handleEvents(Input& input, MovementController& movement_controller, float delta_time,
                       bool allowMovement = true);
 
     /// Handle custom events from key input (fires on both press and release)

@@ -6,11 +6,11 @@ namespace spear
 {
 
 /// Process SDL events and call registered callbacks
-void EventHandler::handleEvents(MovementController& movement_controller, float delta_time,
+void EventHandler::handleEvents(Input& input, MovementController& movement_controller, float delta_time,
                                 bool allowMovement)
 {
     SDL_Event event;
-    while (SDL_PollEvent(&event))
+    while (input.pollEvent(event))
     {
         auto it = callbacks.find(event.type);
         if (it != callbacks.end())

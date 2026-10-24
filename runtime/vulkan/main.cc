@@ -152,6 +152,7 @@ int main()
     spear::Time time_interface;
 
     // clang-format off
+    spear::SDLInput input;
     spear::EventHandler eventHandler;
 
     eventHandler.handleInput(SDLK_ESCAPE, [&device, &descriptorPool, &descriptorSetLayout]()
@@ -186,7 +187,7 @@ int main()
         float delta_time = time_interface.getDeltaTime();
         time_interface.updateFromMain(delta_time);
 
-        eventHandler.handleEvents(movement_controller, delta_time);
+        eventHandler.handleEvents(input, movement_controller, delta_time);
 
         // Move the point lights and their markers.
         light_time += delta_time;

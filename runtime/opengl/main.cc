@@ -126,6 +126,7 @@ int main()
         std::cout << "Running scene 1: " << scene1_id << std::endl;
     });
 
+    spear::SDLInput input;
     spear::EventHandler eventHandler;
 
     eventHandler.handleInput(SDLK_ESCAPE, [](){
@@ -186,7 +187,7 @@ int main()
         shared_bullet_world->stepSimulation(1.0f / 60.f);
 
         // Event handling.
-        eventHandler.handleEvents(movement_controller, delta_time);
+        eventHandler.handleEvents(input, movement_controller, delta_time);
 
         // Update SDL_Window if using OpenGL.
         window.update();
