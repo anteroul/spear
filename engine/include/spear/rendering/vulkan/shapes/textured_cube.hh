@@ -4,6 +4,7 @@
 #include <spear/rendering/vulkan/shapes/cube.hh>
 #include <spear/rendering/vulkan/texture/texture.hh>
 
+#include <array>
 #include <memory>
 
 namespace spear::rendering::vulkan
@@ -15,6 +16,17 @@ namespace spear::rendering::vulkan
 class TexturedCube : public Cube, public Texture
 {
 public:
+    /// Cube faces, in vertex buffer order. Front faces +z.
+    enum class Face
+    {
+        Front,
+        Back,
+        Left,
+        Right,
+        Bottom,
+        Top,
+    };
+
     /// Constructor.
     /// \param device            Logical device.
     /// \param physDevice        Physical device (memory allocation).
@@ -36,6 +48,10 @@ public:
 
     void render(Camera& camera) override;
 
+    /// Draw \p face with \p texture instead of the cube's own texture. Allocates a
+    /// descriptor set from the cube's pool.
+    void setFaceTexture(Face face, std::shared_ptr<vulkan::Texture> texture);
+
     static std::unique_ptr<TexturedCube> create(VkDevice device,
                                                 VkPhysicalDevice physDevice,
                                                 std::shared_ptr<vulkan::Texture> texture,
@@ -50,7 +66,11 @@ public:
     }
 
 private:
+    static constexpr size_t s_faceCount = 6;
+    static constexpr uint32_t s_verticesPerFace = 6;
+
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
     struct Vertex
     {
         glm::vec3 position;
@@ -63,6 +83,9 @@ private:
 private:
     /// Kept alive so that the borrowed VkImageView / VkSampler remain valid.
     std::shared_ptr<vulkan::Texture> m_texture;
+    /// Per-face overrides; a null descriptor set means the face uses the cube's texture.
+    std::array<std::shared_ptr<vulkan::Texture>, s_faceCount> m_faceTextures;
+    std::array<VkDescriptorSet, s_faceCount> m_faceDescriptorSets{};
 };
 
 } // namespace spear::rendering::vulkan

@@ -49,6 +49,10 @@ public:
 
     void setRelativeMouseMode(bool is_relative);
 
+    /// Keep the cursor at the centre of the window while it has focus, so it can never leave
+    /// it. Also grabs the mouse. Follows the window when it is moved or resized.
+    void lockCursorToCenter(bool locked);
+
     /// Set the window and taskbar icon from an image file (PNG, JPG, ...).
     /// Returns false if the image could not be loaded.
     bool setIcon(const std::string& image_path);
@@ -60,6 +64,12 @@ private:
     SDL_Window* m_window;
     std::string m_window_name;
     Size m_size;
+    bool m_cursorLockedToCenter = false;
+
+    /// Warp the cursor to the window centre, if the window has input focus.
+    void recenterCursor();
+    /// Recentres the cursor after mouse motion and when the window moves, resizes or regains focus.
+    static bool SDLCALL cursorLockEventWatch(void* userdata, SDL_Event* event);
 };
 
 } // namespace spear
