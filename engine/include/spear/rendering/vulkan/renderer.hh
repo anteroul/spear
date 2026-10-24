@@ -5,6 +5,7 @@
 #include <spear/rendering/base_renderer.hh>
 #include <spear/rendering/lighting_uniform.hh>
 #include <spear/rendering/vulkan/frame_context.hh>
+#include <spear/rendering/vulkan/smoke_renderer.hh>
 #include <spear/rendering/vulkan/ui/ui_renderer.hh>
 #include <spear/window/vulkan_window.hh>
 
@@ -20,6 +21,7 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
+#include <chrono>
 
 namespace spear
 {
@@ -163,6 +165,12 @@ private:
     VkDescriptorPool m_sunPool = VK_NULL_HANDLE;
     VkSampler m_shadowSampler = VK_NULL_HANDLE;
     VkRenderPass m_shadowRenderPass = VK_NULL_HANDLE;
+
+    SmokeRenderer m_smokeRenderer;
+    std::chrono::steady_clock::time_point m_lastFrameTime{};
+    float m_smokeTime = 0.0f;
+    /// Seconds since the previous frame for the particle simulation, clamped against hitches.
+    float advanceSmokeClock();
 };
 
 } // namespace spear::rendering::vulkan

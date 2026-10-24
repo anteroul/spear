@@ -2,6 +2,7 @@
 #include <spear/window/base_window.hh>
 
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 #include <iostream>
 
@@ -62,6 +63,23 @@ void BaseWindow::setRelativeMouseMode(bool is_relative)
     {
         std::cerr << "Window: Could not set relative mouse mode!" << std::endl;
     }
+}
+
+bool BaseWindow::setIcon(const std::string& image_path)
+{
+    SDL_Surface* icon = IMG_Load(image_path.c_str());
+    if (!icon)
+    {
+        std::cerr << "Window: Could not load icon " << image_path << ": " << SDL_GetError() << std::endl;
+        return false;
+    }
+    const bool result = SDL_SetWindowIcon(m_window, icon);
+    if (!result)
+    {
+        std::cerr << "Window: Could not set icon: " << SDL_GetError() << std::endl;
+    }
+    SDL_DestroySurface(icon);
+    return result;
 }
 
 void BaseWindow::resize()

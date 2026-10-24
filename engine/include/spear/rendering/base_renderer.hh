@@ -2,6 +2,7 @@
 #define SPEAR_RENDERING_BASE_RENDERER_HH
 
 #include <spear/rendering/light.hh>
+#include <spear/rendering/smoke.hh>
 #include <spear/window/base_window.hh>
 
 #include <glm/vec4.hpp>
@@ -37,6 +38,16 @@ public:
         return m_lights;
     }
 
+    /// Smoke emitters simulated and drawn by renderers that support particles (currently Vulkan).
+    SmokeManager& getSmoke()
+    {
+        return m_smoke;
+    }
+    const SmokeManager& getSmoke() const
+    {
+        return m_smoke;
+    }
+
 protected:
     const BaseWindow& getWindow() const
     {
@@ -62,6 +73,7 @@ private:
     BaseWindow& m_baseWindow;
     std::optional<glm::vec4> m_backgroundColor;
     LightManager m_lights;
+    SmokeManager m_smoke;
 };
 
 } // namespace spear::rendering

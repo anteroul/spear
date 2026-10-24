@@ -534,7 +534,8 @@ void PipelineManager::initializeUI(VkDevice device,
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.layout = m_uiPipelineLayout;
     pipelineInfo.renderPass = renderPass;
-    pipelineInfo.subpass = 0;
+    // The overlay is drawn last, after the smoke subpass.
+    pipelineInfo.subpass = 1;
 
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_uiPipeline) != VK_SUCCESS)
         throw std::runtime_error("Failed to create UI graphics pipeline!");
@@ -635,8 +636,141 @@ void PipelineManager::initializeShadow(VkDevice device, VkRenderPass renderPass)
     vkDestroyShaderModule(device, module, nullptr);
 }
 
+void PipelineManager::initializeSmoke(VkDevice device, VkRenderPass renderPass, VkDescriptorSetLayout smokeLayout)
+{
+    VkPipelineLayoutCreateInfo computeLayoutInfo{};
+    computeLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    computeLayoutInfo.setLayoutCount = 1;
+    computeLayoutInfo.pSetLayouts = &smokeLayout;
+    if (vkCreatePipelineLayout(device, &computeLayoutInfo, nullptr, &m_smokeComputePipelineLayout) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create smoke compute pipeline layout");
+
+    auto computeCode = compileGLSLToSPIRV(readGLSLFile(getShaderPath("smoke_vulkan_compute.glsl")),
+                                          shaderc_compute_shader);
+    VkShaderModule computeModule = createShaderModule(device, computeCode);
+    VkComputePipelineCreateInfo computeInfo{};
+    computeInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    computeInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    computeInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    computeInfo.stage.module = computeModule;
+    computeInfo.stage.pName = "main";
+    computeInfo.layout = m_smokeComputePipelineLayout;
+    if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &computeInfo, nullptr, &m_smokeComputePipeline) !=
+        VK_SUCCESS)
+        throw std::runtime_error("Failed to create smoke compute pipeline");
+    vkDestroyShaderModule(device, computeModule, nullptr);
+
+    // Set 0 is the lighting data shared with the opaque pipelines, set 1 the particles and scene depth.
+    VkPushConstantRange push{};
+    push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    push.size = sizeof(glm::mat4) + sizeof(glm::vec4) * 2;
+    VkDescriptorSetLayout layouts[] = {m_sunLayout, smokeLayout};
+    VkPipelineLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layoutInfo.setLayoutCount = 2;
+    layoutInfo.pSetLayouts = layouts;
+    layoutInfo.pushConstantRangeCount = 1;
+    layoutInfo.pPushConstantRanges = &push;
+    if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_smokePipelineLayout) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create smoke pipeline layout");
+
+    auto vertCode = compileGLSLToSPIRV(readGLSLFile(getShaderPath("smoke_vulkan_vertex.glsl")),
+                                       shaderc_vertex_shader);
+    auto fragCode = compileGLSLToSPIRV(readGLSLFile(getShaderPath("smoke_vulkan_fragment.glsl")),
+                                       shaderc_fragment_shader);
+    VkShaderModule vertModule = createShaderModule(device, vertCode);
+    VkShaderModule fragModule = createShaderModule(device, fragCode);
+    VkPipelineShaderStageCreateInfo stages[2]{};
+    stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+    stages[0].module = vertModule;
+    stages[0].pName = "main";
+    stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    stages[1].module = fragModule;
+    stages[1].pName = "main";
+
+    // Quads are built from gl_VertexIndex, so there is no vertex input.
+    VkPipelineVertexInputStateCreateInfo vertex{};
+    vertex.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    VkPipelineInputAssemblyStateCreateInfo assembly{};
+    assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkPipelineViewportStateCreateInfo viewportState{};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.scissorCount = 1;
+    VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = 2;
+    dynamicState.pDynamicStates = dynamicStates;
+    VkPipelineRasterizationStateCreateInfo raster{};
+    raster.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    raster.polygonMode = VK_POLYGON_MODE_FILL;
+    raster.cullMode = VK_CULL_MODE_NONE;
+    raster.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    raster.lineWidth = 1.0f;
+    VkPipelineMultisampleStateCreateInfo multisample{};
+    multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    // Tested against the opaque scene but never written: the depth buffer is read as an input attachment.
+    VkPipelineDepthStencilStateCreateInfo depth{};
+    depth.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depth.depthTestEnable = VK_TRUE;
+    depth.depthWriteEnable = VK_FALSE;
+    depth.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    // Premultiplied alpha.
+    VkPipelineColorBlendAttachmentState blendAttachment{};
+    blendAttachment.blendEnable = VK_TRUE;
+    blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    blendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                     VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    VkPipelineColorBlendStateCreateInfo blend{};
+    blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    blend.attachmentCount = 1;
+    blend.pAttachments = &blendAttachment;
+
+    VkGraphicsPipelineCreateInfo info{};
+    info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    info.stageCount = 2;
+    info.pStages = stages;
+    info.pVertexInputState = &vertex;
+    info.pInputAssemblyState = &assembly;
+    info.pViewportState = &viewportState;
+    info.pRasterizationState = &raster;
+    info.pMultisampleState = &multisample;
+    info.pDepthStencilState = &depth;
+    info.pColorBlendState = &blend;
+    info.pDynamicState = &dynamicState;
+    info.layout = m_smokePipelineLayout;
+    info.renderPass = renderPass;
+    info.subpass = 1;
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &info, nullptr, &m_smokePipeline) != VK_SUCCESS)
+        throw std::runtime_error("Failed to create smoke pipeline");
+    vkDestroyShaderModule(device, vertModule, nullptr);
+    vkDestroyShaderModule(device, fragModule, nullptr);
+}
+
 void PipelineManager::cleanup(VkDevice device)
 {
+    if (m_smokePipeline)
+        vkDestroyPipeline(device, m_smokePipeline, nullptr);
+    if (m_smokePipelineLayout)
+        vkDestroyPipelineLayout(device, m_smokePipelineLayout, nullptr);
+    if (m_smokeComputePipeline)
+        vkDestroyPipeline(device, m_smokeComputePipeline, nullptr);
+    if (m_smokeComputePipelineLayout)
+        vkDestroyPipelineLayout(device, m_smokeComputePipelineLayout, nullptr);
+    m_smokePipeline = VK_NULL_HANDLE;
+    m_smokePipelineLayout = VK_NULL_HANDLE;
+    m_smokeComputePipeline = VK_NULL_HANDLE;
+    m_smokeComputePipelineLayout = VK_NULL_HANDLE;
     if (m_shadowColorPipeline)
         vkDestroyPipeline(device, m_shadowColorPipeline, nullptr);
     if (m_shadowTexturedPipeline)

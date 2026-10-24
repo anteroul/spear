@@ -49,6 +49,10 @@ public:
 
     void setRelativeMouseMode(bool is_relative);
 
+    /// Set the window and taskbar icon from an image file (PNG, JPG, ...).
+    /// Returns false if the image could not be loaded.
+    bool setIcon(const std::string& image_path);
+
 protected:
     void createWindow(uint32_t flags);
 

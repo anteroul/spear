@@ -9,6 +9,7 @@ int main()
     const spear::BaseWindow::Size window_size = {820, 640};
 
     spear::VulkanWindow window(window_name, window_size);
+    window.setIcon(spear::getAssetPath("spear_icon.png"));
     auto w_size = window.getSize();
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
@@ -96,6 +97,27 @@ int main()
     spear::rendering::PointLight cold_light = warm_light;
     cold_light.color = glm::vec3(0.3f, 0.5f, 1.0f);
     auto cold_light_id = lights.addPointLight(cold_light);
+
+    // Smoke: a tall grey column and a low, dark, drifting plume.
+    auto& smoke = renderer.getSmoke();
+    smoke.setWind(glm::vec3(0.12f, 0.0f, 0.0f));
+
+    spear::rendering::SmokeEmitter column;
+    column.position = glm::vec3(-4.0f, -1.9f, -3.0f);
+    smoke.addEmitter(column);
+
+    spear::rendering::SmokeEmitter plume;
+    plume.position = glm::vec3(4.0f, -1.9f, -1.0f);
+    plume.radius = 0.6f;
+    plume.velocity = glm::vec3(0.0f, 0.5f, 0.0f);
+    plume.color = glm::vec3(0.25f);
+    plume.opacity = 0.5f;
+    plume.startSize = 0.6f;
+    plume.endSize = 3.0f;
+    plume.lifetime = 8.0f;
+    plume.rate = 30.0f;
+    plume.turbulence = 1.0f;
+    smoke.addEmitter(plume);
 
     // Floor to catch the shadows, and small glowing cubes marking the lights.
     auto floor = std::make_shared<spear::rendering::vulkan::Cube>(
