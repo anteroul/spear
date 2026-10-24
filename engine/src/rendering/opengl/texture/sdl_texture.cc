@@ -57,6 +57,10 @@ SDLTexture::SDLTexture(const std::string& path, bool asset_path)
         return;
     }
 
+    // OpenGL expects the bottom row first, like the STB loader with vertical flipping on.
+    if (!SDL_FlipSurface(surface, SDL_FLIP_VERTICAL))
+        std::cerr << "Failed to flip image: " << path << " | SDL_Error: " << SDL_GetError() << std::endl;
+
     // Generate OpenGL texture.
     glGenTextures(1, &m_texture);
     rendering::opengl::openglError("glGenTextures");

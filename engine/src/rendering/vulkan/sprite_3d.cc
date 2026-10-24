@@ -149,15 +149,16 @@ std::vector<Sprite3D::Vertex> Sprite3D::createVertices() const
     // clang-format off
     // Winding is CW in world space so that after the shader's Y-flip it becomes
     // CW in Vulkan framebuffer space (Y-down), matching VK_FRONT_FACE_CLOCKWISE.
+    // Textures are stored top row first, so v = 0 is the top edge.
     return {
         // Triangle 1
-        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
-        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}},
-        {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {0.0f, 1.0f}},
+        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 0.0f}},
+        {{ 0.5f, -0.5f, 0.0f}, {1.0f, 1.0f}},
         // Triangle 2
-        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 1.0f}},
-        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
-        {{-0.5f,  0.5f, 0.0f}, {0.0f, 1.0f}},
+        {{ 0.5f,  0.5f, 0.0f}, {1.0f, 0.0f}},
+        {{-0.5f, -0.5f, 0.0f}, {0.0f, 1.0f}},
+        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f}},
     };
     // clang-format on
 }

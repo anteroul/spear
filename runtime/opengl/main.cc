@@ -13,6 +13,7 @@ int main()
     window.setIcon(spear::getAssetPath("spear_icon.png"));
     window.hideCursor(true);
     window.setMouseGrab(true);
+    window.lockCursorToCenter(true);
     window.setRelativeMouseMode(true);
 
     auto w_size = window.getSize();

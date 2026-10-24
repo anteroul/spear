@@ -10,6 +10,11 @@ int main()
 
     spear::VulkanWindow window(window_name, window_size);
     window.setIcon(spear::getAssetPath("spear_icon.png"));
+    // Keep the cursor hidden and locked to the window centre; mouse motion only turns the camera.
+    window.hideCursor(true);
+    window.setMouseGrab(true);
+    window.lockCursorToCenter(true);
+    window.setRelativeMouseMode(true);
     auto w_size = window.getSize();
     std::cout << "Window size x: " << w_size.x << " y: " << w_size.y << std::endl;
 
@@ -50,13 +55,17 @@ int main()
     auto texture = spear::rendering::vulkan::STBTexture::create(device, physDevice, renderer.getCommandPool(), renderer.getGraphicsQueue(), spear::getAssetPath("wallnut.jpg"));
     auto niilo = spear::rendering::vulkan::STBTexture::create(device, physDevice, renderer.getCommandPool(), renderer.getGraphicsQueue(), spear::getAssetPath("niilo.jpg"));
 
-    // clang-format off
-    auto scene_objects = spear::Scene::Container{
-        std::make_shared<spear::rendering::vulkan::TexturedCube>(
+    // Wood cube with niilo on the face towards the player's starting position.
+    auto niilo_cube = std::make_shared<spear::rendering::vulkan::TexturedCube>(
             device, physDevice,
             texture,
             descriptorPool, descriptorSetLayout,
-            spear::physics::bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.5f, 0.0f, 0.0f), default_size)),
+            spear::physics::bullet::ObjectData(shared_bullet_world, 1.0f, glm::vec3(1.5f, 0.0f, 0.0f), default_size));
+    niilo_cube->setFaceTexture(spear::rendering::vulkan::TexturedCube::Face::Front, niilo);
+
+    // clang-format off
+    auto scene_objects = spear::Scene::Container{
+        niilo_cube,
         std::make_shared<spear::rendering::vulkan::Sprite3D>(
             device, physDevice,
             niilo,
